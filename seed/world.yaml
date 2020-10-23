@@ -1,0 +1,27 @@
+name: User
+attributes:
+  name: String!
+  email: String!
+relations:
+  posts: "[Post!]!"
+
+---
+
+name: PostKind
+values:
+  - Blog
+  - Tutorial
+  - History
+  
+---
+name: Post
+attributes:
+  title: String!
+  body: String!
+  kind: PostKind!
+
+relations:
+  autor:
+    type: Person!
+    ref: posts
+
