@@ -7,3 +7,12 @@ name: Float
 name: Map
 ---
 name: File
+---
+
+# alias
+ID:
+  type: String
+  required: true
+  unique: true
+  immutable: true
+

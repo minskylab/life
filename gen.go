@@ -84,12 +84,14 @@ func partToEnts(data []byte, parts [][]byte) [][]byte {
 
 // EntityProp ...
 type EntityProp struct {
-	Name     string   `yaml:"name"`
-	Type     string   `yaml:"type"`
-	Required bool     `yaml:"required"`
-	Many     bool     `yaml:"many"`
-	Ref      string   `yaml:"ref"`
-	Values   []string `yaml:"values"`
+	Name      string   `yaml:"name"`
+	Type      string   `yaml:"type"`
+	Required  bool     `yaml:"required"`
+	Unique    bool     `yaml:"unique"`
+	Immutable bool     `yaml:"immutable"`
+	Many      bool     `yaml:"many"`
+	Ref       string   `yaml:"ref"`
+	Values    []string `yaml:"values"`
 }
 
 // RawEntity ...
@@ -99,6 +101,16 @@ type RawEntity struct {
 	Attributes map[string]interface{} `yaml:"attributes"`
 	Relations  map[string]interface{} `yaml:"relations"`
 	Values     []string               `yaml:"values"`
+}
+
+// Alias ...
+type Alias struct {
+	Type      string `yaml:"type"`
+	Required  bool   `yaml:"required"`
+	Unique    bool   `yaml:"unique"`
+	Immutable bool   `yaml:"immutable"`
+	Many      bool   `yaml:"many"`
+	Ref       string `yaml:"ref"`
 }
 
 // Entity ...
@@ -114,6 +126,8 @@ func parseProp(name string, prop interface{}) EntityProp {
 	case string:
 		fAttr := EntityProp{}
 		sAttr := prop.(string)
+		// TODO Here
+		//
 
 		fAttr.Name = name
 		fAttr.Type = strings.Trim(sAttr, "[]! \n")
@@ -173,15 +187,32 @@ func main() {
 	contents := getFilesContents(files...)
 
 	entities := map[string][]RawEntity{}
+	alias := map[string]Alias{}
 
 	for f, data := range contents {
 		parts := partToEnts(data, nil)
 		var ents []RawEntity
+
 		for _, p := range parts {
 			var e RawEntity
 			if err := yaml.Unmarshal(p, &e); err != nil {
 				log.Fatal(err)
 			}
+
+			if e.Name == "" { // isn't an entity
+				fmt.Println(string(p))
+				newAlias := map[string]Alias{}
+				if err := yaml.Unmarshal(p, &newAlias); err != nil {
+					log.Fatal(err)
+				}
+
+				for k, v := range newAlias {
+					alias[k] = v
+				}
+
+				continue
+			}
+
 			ents = append(ents, e)
 		}
 		entities[f] = ents

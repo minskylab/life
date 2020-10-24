@@ -1,5 +1,6 @@
 name: User
 attributes:
+  id: ID!
   name: String!
   email: String!
 relations:
@@ -16,6 +17,7 @@ values:
 ---
 name: Post
 attributes:
+  id: ID!
   title: String!
   body: String!
   kind: PostKind!
