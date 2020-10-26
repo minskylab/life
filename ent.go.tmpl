@@ -16,7 +16,7 @@ func ({{.Name}}) Fields() []ent.Field {
 	return []ent.Field{
 	{{- range .Attributes}}
 	{{- if .Values}}
-		field.Enum("{{.Name}}").Values({{range .Values}}"{{.}}",{{end}}){{if .Required}}.NotEmpty(){{end}}{{if .Unique}}.Unique(){{end}}{{if .Immutable}}.Immutable(){{end}},
+		field.Enum("{{.Name}}").Values({{range .Values}}"{{.}}",{{end}}){{if .Unique}}.Unique(){{end}}{{if .Immutable}}.Immutable(){{end}},
 	{{else}}
 		field.{{.Type}}{{if .Many}}s{{end}}("{{.Name}}"){{if .Required}}.NotEmpty(){{end}}{{if .Unique}}.Unique(){{end}}{{if .Immutable}}.Immutable(){{end}},
 	{{- end}}

@@ -130,11 +130,7 @@ func parseProp(name string, prop interface{}, alias map[string]Alias) EntityProp
 
 		fAttr.Name = name
 
-		if strings.HasSuffix(sAttr, "!") {
-			sAttr = strings.TrimRight(sAttr, "! \n")
-		}
-
-		al, exists := alias[sAttr]
+		al, exists := alias[strings.TrimRight(sAttr, "[]! \n")]
 		if exists {
 			fAttr.Type = strings.Trim(al.Type, "[]! \n")
 			fAttr.Required = al.Required
@@ -197,8 +193,13 @@ func parseProp(name string, prop interface{}, alias map[string]Alias) EntityProp
 
 type kind string
 
+// EnumKind ...
 const EnumKind kind = "enum"
+
+// EntityKind ...
 const EntityKind kind = "ent"
+
+// AliasKind ...
 const AliasKind kind = "alias"
 
 func entKind(ent RawEntity) kind {
@@ -272,6 +273,7 @@ func main() {
 
 				if isEnum {
 					p.Values = values
+					continue
 				}
 
 				attributes = append(attributes, p)
@@ -293,6 +295,10 @@ func main() {
 	// spew.Dump(finalEntities)
 
 	if err := executeEntGenerator("ent/schema", finalEntities); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := executeGraphQLGenerator("graphql/schema", finalEntities); err != nil {
 		log.Fatal(err)
 	}
 }

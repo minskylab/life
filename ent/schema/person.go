@@ -15,8 +15,8 @@ type Person struct {
 func (Person) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").NotEmpty().Unique().Immutable(),
-		field.String("name"),
-		field.String("email"),
+		field.String("name").NotEmpty(),
+		field.String("email").NotEmpty(),
 	}
 }
 

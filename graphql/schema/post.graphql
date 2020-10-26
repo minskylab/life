@@ -1,0 +1,7 @@
+
+type Post {
+    id: String!
+    title: String!
+    body: String!
+    autor: Person!
+}

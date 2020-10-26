@@ -1,0 +1,7 @@
+
+type Person {
+    id: String!
+    name: String!
+    email: String! 
+    posts: [Post!]!
+}

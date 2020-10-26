@@ -15,10 +15,8 @@ type Post struct {
 func (Post) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").NotEmpty().Unique().Immutable(),
-		field.String("title"),
-		field.String("body"),
-		field.Enum("kind").Values("Blog","Tutorial","History",),
-	
+		field.String("title").NotEmpty(),
+		field.String("body").NotEmpty(),
 	}
 }
 
