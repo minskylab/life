@@ -40,7 +40,7 @@ func generateEntSchemaDir(where string, entities []Entity, tmpl *template.Templa
 }
 
 func executeEntGenerator(where string, entities []Entity) error {
-	tmpl, err := template.New("ent.go").ParseFiles("ent.go.tmpl")
+	tmpl, err := template.New("entgen").ParseFiles("ent.go.tmpl")
 	if err != nil {
 		log.Fatal(err)
 	}

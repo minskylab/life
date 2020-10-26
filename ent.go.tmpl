@@ -16,7 +16,8 @@ func ({{.Name}}) Fields() []ent.Field {
 	return []ent.Field{
 		{{range .Attributes}}
 			{{if .Values}}
-				field.Enum("{{.Name}}").Values({{range .Values}}"{{.}}",{{end}}{{- }}){{if .Required}}.NotEmpty(){{end}}{{if .Unique}}.Unique(){{end}}{{if .Immutable}}.Immutable(){{end}}
+				field.Enum("{{.Name}}")
+				{{/* field.Enum("{{.Name}}").Values({{range .Values}}"{{.}}",{{end}}{{- )}}{{if .Required}}.NotEmpty(){{end}}{{if .Unique}}.Unique(){{end}}{{if .Immutable}}.Immutable(){{end}} */}}
 			{{else}}
 				field.{{.Type}}{{if .Many}}s{{end}}("{{.Name}}"){{if .Required}}.NotEmpty(){{end}}{{if .Unique}}.Unique(){{end}}{{if .Immutable}}.Immutable(){{end}}
 			{{end}}
@@ -24,10 +25,10 @@ func ({{.Name}}) Fields() []ent.Field {
 	}
 }
 
-// Edges of the {{.Name}}.
+// Edges of the {{.Name}}.	
 func ({{.Name}}) Edges() []ent.Edge {
 	return []ent.Edge{
-		{range .Relations}}
+		{{range .Relations}}
 			{{if .Ref}}
 				edge.From("{{.Name}}", {{.Type}}.Type){{if (not .Many) or .Unique}}.Unique(){{end}}.Ref("{{.Ref}}"),
 			{{else}}

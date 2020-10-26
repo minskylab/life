@@ -10,7 +10,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v3"
 )
 
@@ -215,7 +214,6 @@ func main() {
 			}
 
 			if e.Name == "" { // isn't an entity
-				fmt.Println(string(p))
 				newAlias := map[string]Alias{}
 				if err := yaml.Unmarshal(p, &newAlias); err != nil {
 					log.Fatal(err)
@@ -260,5 +258,9 @@ func main() {
 		}
 	}
 
-	spew.Dump(finalEntities)
+	// spew.Dump(finalEntities)
+
+	if err := executeEntGenerator("ent/schema", finalEntities); err != nil {
+		log.Fatal(err)
+	}
 }
