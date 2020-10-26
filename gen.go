@@ -91,7 +91,7 @@ type EntityProp struct {
 	Immutable bool     `yaml:"immutable"`
 	Many      bool     `yaml:"many"`
 	Ref       string   `yaml:"ref"`
-	Values    []string `yaml:"values"`
+	Values    []string `yaml:"values"` // useful for ent
 }
 
 // RawEntity ...
@@ -121,7 +121,7 @@ type Entity struct {
 	Values     []string
 }
 
-func parseProp(name string, prop interface{}) EntityProp {
+func parseProp(name string, prop interface{}, alias map[string]Alias) EntityProp {
 	switch prop.(type) {
 	case string:
 		fAttr := EntityProp{}
@@ -130,15 +130,30 @@ func parseProp(name string, prop interface{}) EntityProp {
 		//
 
 		fAttr.Name = name
-		fAttr.Type = strings.Trim(sAttr, "[]! \n")
 
 		if strings.HasSuffix(sAttr, "!") {
-			fAttr.Required = true
 			sAttr = strings.TrimRight(sAttr, "! \n")
 		}
 
-		if strings.HasPrefix(sAttr, "[") && strings.HasSuffix(sAttr, "]") {
-			fAttr.Many = true
+		al, exists := alias[sAttr]
+		if exists {
+			fAttr.Type = strings.Trim(al.Type, "[]! \n")
+			fAttr.Required = al.Required
+			fAttr.Many = al.Many
+			fAttr.Ref = al.Ref
+			fAttr.Immutable = al.Immutable
+			fAttr.Unique = al.Unique
+		} else {
+			fAttr.Type = strings.Trim(sAttr, "[]! \n")
+
+			if strings.HasSuffix(sAttr, "!") {
+				fAttr.Required = true
+				sAttr = strings.TrimRight(sAttr, "! \n")
+			}
+
+			if strings.HasPrefix(sAttr, "[") && strings.HasSuffix(sAttr, "]") {
+				fAttr.Many = true
+			}
 		}
 
 		return fAttr
@@ -229,11 +244,11 @@ func main() {
 			relations := make([]EntityProp, 0)
 
 			for name, attr := range ent.Attributes {
-				attributes = append(attributes, parseProp(name, attr))
+				attributes = append(attributes, parseProp(name, attr, alias))
 			}
 
 			for name, rel := range ent.Relations {
-				relations = append(relations, parseProp(name, rel))
+				relations = append(relations, parseProp(name, rel, alias))
 			}
 
 			finalEntities = append(finalEntities, Entity{

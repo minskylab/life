@@ -13,7 +13,7 @@ values:
   - Blog
   - Tutorial
   - History
-  
+
 ---
 name: Post
 attributes:
