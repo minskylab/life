@@ -195,6 +195,24 @@ func parseProp(name string, prop interface{}, alias map[string]Alias) EntityProp
 	return EntityProp{}
 }
 
+type kind string
+
+const EnumKind kind = "enum"
+const EntityKind kind = "ent"
+const AliasKind kind = "alias"
+
+func entKind(ent RawEntity) kind {
+	if (len(ent.Attributes) == 0 && len(ent.Relations) == 0) && len(ent.Values) != 0 {
+		return EnumKind
+	}
+
+	if ent.Name == "" {
+		return AliasKind
+	}
+
+	return EntityKind
+}
+
 func main() {
 	seedPath := "seed"
 	files := loadValidFiles(seedPath)
@@ -234,15 +252,29 @@ func main() {
 
 	finalEntities := make([]Entity, 0)
 
+	enums := map[string][]string{}
+
 	for file, ents := range entities {
 		for _, ent := range ents {
-			fmt.Printf("from: %s | entity: %s\n", file, ent.Name)
+			fmt.Printf("from: %s | [%s] T: %s, A: %d, R: %d\n", file, entKind(ent), ent.Name, len(ent.Attributes), len(ent.Relations))
+
+			if len(ent.Values) != 0 {
+				enums[ent.Name] = ent.Values
+			}
 
 			attributes := make([]EntityProp, 0)
 			relations := make([]EntityProp, 0)
 
 			for name, attr := range ent.Attributes {
-				attributes = append(attributes, parseProp(name, attr, alias))
+				p := parseProp(name, attr, alias)
+
+				values, isEnum := enums[p.Type]
+
+				if isEnum {
+					p.Values = values
+				}
+
+				attributes = append(attributes, p)
 			}
 
 			for name, rel := range ent.Relations {

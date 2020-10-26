@@ -1,4 +1,4 @@
-name: User
+name: Person
 attributes:
   id: ID!
   name: String!
@@ -15,6 +15,7 @@ values:
   - History
 
 ---
+
 name: Post
 attributes:
   id: ID!
