@@ -214,6 +214,18 @@ func entKind(ent RawEntity) kind {
 	return EntityKind
 }
 
+func entityKind(ent Entity) kind {
+	if (len(ent.Attributes) == 0 && len(ent.Relations) == 0) && len(ent.Values) != 0 {
+		return EnumKind
+	}
+
+	if ent.Name == "" {
+		return AliasKind
+	}
+
+	return EntityKind
+}
+
 func main() {
 	seedPath := "seed"
 	files := loadValidFiles(seedPath)

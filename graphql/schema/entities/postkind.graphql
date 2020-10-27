@@ -1,0 +1,6 @@
+
+enum PostKind { 
+    Blog 
+    Tutorial 
+    History
+}
