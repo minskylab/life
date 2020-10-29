@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -206,12 +207,16 @@ const AliasKind kind = "alias"
 const ScalarKind kind = "scalar"
 
 func entKind(ent RawEntity) kind {
-	if (len(ent.Attributes) == 0 && len(ent.Relations) == 0) && len(ent.Values) != 0 {
+	if ent.Name == "" {
+		return AliasKind
+	}
+
+	if len(ent.Values) != 0 {
 		return EnumKind
 	}
 
-	if ent.Name == "" {
-		return AliasKind
+	if len(ent.Attributes) == 0 && len(ent.Relations) == 0 {
+		return ScalarKind
 	}
 
 	return EntityKind
@@ -222,15 +227,18 @@ func entityKind(ent Entity) kind {
 		return AliasKind
 	}
 
-	if (len(ent.Attributes) == 0 && len(ent.Relations) == 0) && len(ent.Values) != 0 {
+	if len(ent.Values) != 0 {
 		return EnumKind
+	}
+
+	if len(ent.Attributes) == 0 && len(ent.Relations) == 0 {
+		return ScalarKind
 	}
 
 	return EntityKind
 }
 
-func main() {
-	seedPath := "seed"
+func entitiesFromSeed(seedPath string) ([]Entity, error) {
 	files := loadValidFiles(seedPath)
 	contents := getFilesContents(files...)
 
@@ -244,13 +252,13 @@ func main() {
 		for _, p := range parts {
 			var e RawEntity
 			if err := yaml.Unmarshal(p, &e); err != nil {
-				log.Fatal(err)
+				return nil, errors.WithStack(err)
 			}
 
 			if e.Name == "" { // isn't an entity
 				newAlias := map[string]Alias{}
 				if err := yaml.Unmarshal(p, &newAlias); err != nil {
-					log.Fatal(err)
+					return nil, errors.WithStack(err)
 				}
 
 				for k, v := range newAlias {
@@ -266,7 +274,7 @@ func main() {
 
 	}
 
-	finalEntities := make([]Entity, 0)
+	var finalEntities []Entity
 
 	enums := map[string][]string{}
 
@@ -307,13 +315,13 @@ func main() {
 		}
 	}
 
-	// spew.Dump(finalEntities)
+	return finalEntities, nil
+}
 
-	if err := executeEntGenerator("ent/schema", finalEntities); err != nil {
-		log.Fatal(err)
-	}
+func main() {
+	app := buildCLI()
 
-	if err := executeGraphQLGenerator("graphql/schema", finalEntities); err != nil {
-		log.Fatal(err)
+	if err := app.Run(os.Args); err != nil {
+		panic(fmt.Sprintf("%+v\n", err))
 	}
 }

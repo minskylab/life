@@ -28,7 +28,12 @@ func generateSchemaDir(where string, entities []Entity, tmpl *template.Template,
 	_ = os.MkdirAll(where, os.ModePerm)
 
 	for _, ent := range entities {
-		if entityKind(ent) == ScalarKind {
+		kind := entityKind(ent)
+		if kind == ScalarKind {
+			continue
+		}
+
+		if ext == entGen && kind == EnumKind {
 			continue
 		}
 
