@@ -18,7 +18,7 @@ type genTypeExtension string
 const graphqlGen genTypeExtension = ".graphql"
 const entGen genTypeExtension = ".go"
 
-func generateEntSchema(entity Entity, tmpl *template.Template, out io.Writer) error {
+func generateTemplate(entity Entity, tmpl *template.Template, out io.Writer) error {
 	return tmpl.Execute(out, entity)
 }
 
@@ -28,15 +28,11 @@ func generateSchemaDir(where string, entities []Entity, tmpl *template.Template,
 	_ = os.MkdirAll(where, os.ModePerm)
 
 	for _, ent := range entities {
-		if entityKind(ent) == EnumKind {
-
-		}
-
-		if ext == entGen && (len(ent.Values) != 0 || (len(ent.Relations) == 0 && len(ent.Attributes) == 0)) { // scalar
+		if entityKind(ent) == ScalarKind {
 			continue
 		}
 
-		if err := generateEntSchema(ent, tmpl, buff); err != nil {
+		if err := generateTemplate(ent, tmpl, buff); err != nil {
 			return errors.WithStack(err)
 		}
 

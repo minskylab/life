@@ -202,6 +202,9 @@ const EntityKind kind = "ent"
 // AliasKind ...
 const AliasKind kind = "alias"
 
+// ScalarKind ...
+const ScalarKind kind = "scalar"
+
 func entKind(ent RawEntity) kind {
 	if (len(ent.Attributes) == 0 && len(ent.Relations) == 0) && len(ent.Values) != 0 {
 		return EnumKind
@@ -215,12 +218,12 @@ func entKind(ent RawEntity) kind {
 }
 
 func entityKind(ent Entity) kind {
-	if (len(ent.Attributes) == 0 && len(ent.Relations) == 0) && len(ent.Values) != 0 {
-		return EnumKind
-	}
-
 	if ent.Name == "" {
 		return AliasKind
+	}
+
+	if (len(ent.Attributes) == 0 && len(ent.Relations) == 0) && len(ent.Values) != 0 {
+		return EnumKind
 	}
 
 	return EntityKind
