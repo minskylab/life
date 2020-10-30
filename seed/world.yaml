@@ -28,3 +28,12 @@ relations:
     type: Person!
     ref: posts
 
+
+--- 
+
+name: ABC
+attributes:
+    id: ID!
+    name: String!
+relations:
+  parent: ABC!

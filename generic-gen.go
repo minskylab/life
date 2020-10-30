@@ -36,6 +36,9 @@ func generateSchemaDir(where string, entities []Entity, tmpl *template.Template,
 		if kind == ScalarKind {
 			if ext == graphqlGen {
 				if scalarsFile == nil {
+					if fileExists(scalarsPath) {
+						_ = os.Remove(scalarsPath)
+					}
 					scalarsFile, _ = os.OpenFile(scalarsPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 					defer scalarsFile.Close()
 				}
@@ -86,8 +89,5 @@ func executeGraphQLGenerator(where string, entities []Entity) error {
 		return errors.WithStack(err)
 	}
 
-	basics := path.Join(where, "operations", "basic.graphqls")
-	if !fileExists(basics) {
-
-	}
+	return nil
 }

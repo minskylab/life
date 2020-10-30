@@ -187,9 +187,8 @@ func parseProp(name string, prop interface{}, alias map[string]Alias) EntityProp
 		return fAttr
 	default:
 		log.Fatal("invalid attribute type")
+		return EntityProp{}
 	}
-
-	return EntityProp{}
 }
 
 type kind string
