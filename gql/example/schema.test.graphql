@@ -1,0 +1,274 @@
+directive @search(by: [DgraphIndex!]) on FIELD_DEFINITION
+
+directive @id on FIELD_DEFINITION
+
+directive @remote on OBJECT | INTERFACE
+
+directive @cascade on FIELD
+
+directive @lambda on FIELD_DEFINITION
+
+directive @hasInverse(field: String!) on FIELD_DEFINITION
+
+directive @withSubscription on OBJECT | INTERFACE
+
+directive @secret(field: String!, pred: String) on OBJECT | INTERFACE
+
+directive @dgraph(type: String, pred: String) on OBJECT | INTERFACE | FIELD_DEFINITION
+
+directive @custom(http: CustomHTTP, dql: String) on FIELD_DEFINITION
+
+directive @auth(query: AuthRule, add: AuthRule, update: AuthRule, delete: AuthRule) on OBJECT
+
+input AddTaskInput {
+  title: String!
+  completed: Boolean!
+  user: UserRef!
+}
+
+type AddTaskPayload {
+  task(filter: TaskFilter, order: TaskOrder, first: Int, offset: Int): [Task]
+  numUids: Int
+}
+
+input AddUserInput {
+  username: String!
+  name: String
+  tasks: [TaskRef]
+}
+
+type AddUserPayload {
+  user(filter: UserFilter, order: UserOrder, first: Int, offset: Int): [User]
+  numUids: Int
+}
+
+input AuthRule {
+  and: [AuthRule]
+  or: [AuthRule]
+  not: AuthRule
+  rule: String
+}
+
+input CustomHTTP {
+  url: String!
+  method: HTTPMethod!
+  body: String
+  graphql: String
+  mode: Mode
+  forwardHeaders: [String!]
+  secretHeaders: [String!]
+  introspectionHeaders: [String!]
+  skipIntrospection: Boolean
+}
+
+"""
+The DateTime scalar type represents date and time as a string in RFC3339 format.
+For example: "1985-04-12T23:20:50.52Z" represents 20 minutes and 50.52 seconds
+after the 23rd hour of April 12th, 1985 in UTC.
+"""
+scalar DateTime
+
+input DateTimeFilter {
+  eq: DateTime
+  le: DateTime
+  lt: DateTime
+  ge: DateTime
+  gt: DateTime
+}
+
+type DeleteTaskPayload {
+  task(filter: TaskFilter, order: TaskOrder, first: Int, offset: Int): [Task]
+  msg: String
+  numUids: Int
+}
+
+type DeleteUserPayload {
+  user(filter: UserFilter, order: UserOrder, first: Int, offset: Int): [User]
+  msg: String
+  numUids: Int
+}
+
+enum DgraphIndex {
+  int
+  float
+  bool
+  hash
+  exact
+  term
+  fulltext
+  trigram
+  regexp
+  year
+  month
+  day
+  hour
+}
+
+input FloatFilter {
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+}
+
+enum HTTPMethod {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
+}
+
+input IntFilter {
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+}
+
+enum Mode {
+  BATCH
+  SINGLE
+}
+
+type Mutation {
+  addTask(input: [AddTaskInput!]!): AddTaskPayload
+  updateTask(input: UpdateTaskInput!): UpdateTaskPayload
+  deleteTask(filter: TaskFilter!): DeleteTaskPayload
+  addUser(input: [AddUserInput!]!): AddUserPayload
+  updateUser(input: UpdateUserInput!): UpdateUserPayload
+  deleteUser(filter: UserFilter!): DeleteUserPayload
+}
+
+type Query {
+  getTask(id: ID!): Task
+  queryTask(filter: TaskFilter, order: TaskOrder, first: Int, offset: Int): [Task]
+  getUser(username: String!): User
+  queryUser(filter: UserFilter, order: UserOrder, first: Int, offset: Int): [User]
+}
+
+input StringExactFilter {
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+}
+
+input StringFullTextFilter {
+  alloftext: String
+  anyoftext: String
+}
+
+input StringHashFilter {
+  eq: String
+}
+
+input StringRegExpFilter {
+  regexp: String
+}
+
+input StringTermFilter {
+  allofterms: String
+  anyofterms: String
+}
+
+type Task {
+  id: ID!
+  title: String!
+  completed: Boolean!
+  user(filter: UserFilter): User!
+}
+
+input TaskFilter {
+  id: [ID!]
+  title: StringFullTextFilter
+  completed: Boolean
+  and: TaskFilter
+  or: TaskFilter
+  not: TaskFilter
+}
+
+input TaskOrder {
+  asc: TaskOrderable
+  desc: TaskOrderable
+  then: TaskOrder
+}
+
+enum TaskOrderable {
+  title
+}
+
+input TaskPatch {
+  title: String
+  completed: Boolean
+  user: UserRef
+}
+
+input TaskRef {
+  id: ID
+  title: String
+  completed: Boolean
+  user: UserRef
+}
+
+input UpdateTaskInput {
+  filter: TaskFilter!
+  set: TaskPatch
+  remove: TaskPatch
+}
+
+type UpdateTaskPayload {
+  task(filter: TaskFilter, order: TaskOrder, first: Int, offset: Int): [Task]
+  numUids: Int
+}
+
+input UpdateUserInput {
+  filter: UserFilter!
+  set: UserPatch
+  remove: UserPatch
+}
+
+type UpdateUserPayload {
+  user(filter: UserFilter, order: UserOrder, first: Int, offset: Int): [User]
+  numUids: Int
+}
+
+type User {
+  username: String!
+  name: String
+  tasks(filter: TaskFilter, order: TaskOrder, first: Int, offset: Int): [Task]
+}
+
+input UserFilter {
+  username: StringHashFilter
+  name: StringExactFilter
+  and: UserFilter
+  or: UserFilter
+  not: UserFilter
+}
+
+input UserOrder {
+  asc: UserOrderable
+  desc: UserOrderable
+  then: UserOrder
+}
+
+enum UserOrderable {
+  username
+  name
+}
+
+input UserPatch {
+  name: String
+  tasks: [TaskRef]
+}
+
+input UserRef {
+  username: String
+  name: String
+  tasks: [TaskRef]
+}
+

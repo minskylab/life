@@ -1,0 +1,26 @@
+type Autor {
+    id: ID!
+    name: String!
+    todos: [Todo!]!
+}
+
+type Todo {
+    id: ID!
+    title: String!
+    done: Boolean!
+    owner: Autor
+}
+
+input TodosFilter {
+    how: Int
+    first: Int
+}
+
+type Query {
+    todos(filter: TodosFilter): [Todo!]!
+}
+
+type Mutation {
+    addTodo(title: String!): Todo!
+    deleteTodo(id: ID!): Todo!
+}
