@@ -95,13 +95,17 @@ func generateTypes(definitions []*ast.Definition) *jen.File {
 
 	m.Type().Id("ID").String().Line()
 	m.Type().Id("DateTime").Qual("time", "Time").Line()
+	m.Type().Id("Time").Qual("time", "Time").Line()
+	m.Type().Id("Map").Map(jen.String()).Interface().Line()
+	m.Type().Id("Upload").Qual("io", "Reader").Line()
 
 	for _, def := range definitions {
 		if def.Kind == ast.Enum {
 			m.Type().Id(def.Name).String().Line()
 			for _, val := range def.EnumValues {
 				// log.Println(val.Name)
-				m.Const().Id(strcase.ToScreamingSnake(val.Name)).Id(def.Name).Op("=").Lit(val.Name)
+				constName := strcase.ToScreamingSnake(def.Name + "_" + val.Name)
+				m.Const().Id(constName).Id(def.Name).Op("=").Lit(val.Name)
 			}
 		} else if def.Kind == ast.Scalar {
 			continue
@@ -173,6 +177,18 @@ func generateTypes(definitions []*ast.Definition) *jen.File {
 	return m
 }
 
+func generateQueries(definitions []*ast.Definition) *jen.File {
+	m := jen.NewFile("models")
+
+	return m
+}
+
+func generateMutations(definitions []*ast.Definition) *jen.File {
+	m := jen.NewFile("models")
+
+	return m
+}
+
 func generate(filepath string) {
 	source, err := openSchemaSource(filepath)
 	if err != nil {
@@ -186,28 +202,54 @@ func generate(filepath string) {
 	}
 
 	defs := []*ast.Definition{}
+	queries := []*ast.Definition{}
+	mutations := []*ast.Definition{}
+
 	for _, t := range sch.Types {
-		if t.OneOf("Query", "Mutation") {
-			// make something with mutations and queries
+		if t.Name == "Query" { // make something with mutations and queries
+			queries = append(queries, t)
+		} else if t.Name == "Mutation" {
+			mutations = append(mutations, t)
 		} else if !t.BuiltIn {
 			defs = append(defs, t)
 		}
 	}
 
-	models := generateTypes(defs)
-	f, err := os.OpenFile("models/generated.go", os.O_RDWR|os.O_CREATE, 0660)
+	modelsFile := generateTypes(defs)
+	f, err := os.OpenFile("models/models.go", os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
 		panic(err)
 	}
 
 	defer f.Close()
 
-	if err = models.Render(f); err != nil {
+	if err = modelsFile.Render(f); err != nil {
 		panic(err)
 	}
+
+	queriesFile := generateQueries(queries)
+	f, err = os.OpenFile("models/queries.go", os.O_RDWR|os.O_CREATE, 0660)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = queriesFile.Render(f); err != nil {
+		panic(err)
+	}
+
+	mutationsFile := generateMutations(mutations)
+	f, err = os.OpenFile("models/mutations.go", os.O_RDWR|os.O_CREATE, 0660)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = mutationsFile.Render(f); err != nil {
+		panic(err)
+	}
+
 }
 
 func main() {
 	// strcase.ConfigureAcronym
-	generate("example/schema.graphql")
+	generate("example/schema.hard.graphql")
 }
