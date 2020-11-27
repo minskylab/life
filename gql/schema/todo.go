@@ -11,9 +11,9 @@ type Todo struct {
 }
 
 func (Todo) Fields() []ent.Field {
-	return []ent.Field{field.String("id").NotEmpty()("id").NotEmpty(), field.String("name").NotEmpty()("title").NotEmpty(), field.Boolean("done").NotEmpty()}
+	return []ent.Field{field.String("id").NotEmpty(), field.String("title").NotEmpty(), field.Bool("done")}
 }
 
 func (Todo) Edges() []ent.Edge {
-	return []ent.Edge{edge.To("owner", Autor.Type).Unique(), edge.To("owner", Autor.Type).Unique()}
+	return []ent.Edge{edge.To("owner", Autor.Type).Unique()}
 }

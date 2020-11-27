@@ -15,5 +15,5 @@ func (Autor) Fields() []ent.Field {
 }
 
 func (Autor) Edges() []ent.Edge {
-	return []ent.Edge{edge.To("todos", Todo.Type).Required(), edge.To("todos", Todo.Type).Required()}
+	return []ent.Edge{edge.To("todos", Todo.Type).Required()}
 }

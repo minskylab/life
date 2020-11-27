@@ -25,7 +25,7 @@ var entScalars = map[string]*jen.Statement{
 	"ID":      jen.Qual("github.com/facebook/ent/schema/field", "String"),
 	"Int":     jen.Qual("github.com/facebook/ent/schema/field", "Int"),
 	"Float":   jen.Qual("github.com/facebook/ent/schema/field", "Float64"),
-	"Boolean": jen.Qual("github.com/facebook/ent/schema/field", "Boolean"),
+	"Boolean": jen.Qual("github.com/facebook/ent/schema/field", "Bool"),
 	"String":  jen.Qual("github.com/facebook/ent/schema/field", "String"),
 }
 
@@ -128,13 +128,13 @@ func generateType(def *ast.Definition) *jen.File {
 		jen.Return(
 			jen.Index().Qual("github.com/facebook/ent", "Field").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forFields {
-					fieldScalar := entScalars[field.Type.Name()]
+					fieldScalar := *entScalars[field.Type.Name()]
 
 					log.Println("- field ", field.Name, field.Type.Name())
 
 					f := fieldScalar.Call(jen.Lit(field.Name))
 
-					if field.Type.NonNull {
+					if field.Type.NonNull && field.Type.Name() != "Boolean" {
 						f.Dot("NotEmpty").Call()
 					}
 
@@ -177,11 +177,11 @@ func generateType(def *ast.Definition) *jen.File {
 					var e *jen.Statement
 
 					if field.Directives.ForName("from") != nil {
-						e = g.Qual("github.com/facebook/ent/schema/edge", "From")
+						e = jen.Qual("github.com/facebook/ent/schema/edge", "From")
 					} else if field.Directives.ForName("to") != nil {
-						e = g.Qual("github.com/facebook/ent/schema/edge", "To")
+						e = jen.Qual("github.com/facebook/ent/schema/edge", "To")
 					} else { // default
-						e = g.Qual("github.com/facebook/ent/schema/edge", "To")
+						e = jen.Qual("github.com/facebook/ent/schema/edge", "To")
 					}
 
 					e.Call(
@@ -209,8 +209,6 @@ func generateType(def *ast.Definition) *jen.File {
 
 					g.Add(e)
 				}
-
-				g.Line()
 			}),
 		),
 	)
@@ -223,7 +221,7 @@ func generateTypes(folder string, definitions []*ast.Definition) {
 		entitityFile := generateType(def)
 
 		filepath := path.Join(folder, strcase.ToLowerCamel(def.Name)+".go")
-		f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE, 0660)
+		f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0660)
 		if err != nil {
 			panic(err)
 		}
