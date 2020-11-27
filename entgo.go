@@ -45,6 +45,18 @@ func generate(filepath string, folderOut string) error {
 		} else if t.Kind == ast.Union {
 			continue
 		} else {
+			if t.Directives.ForName("response") != nil {
+				continue
+			}
+
+			if t.Directives.ForName("out") != nil {
+				continue
+			}
+
+			if t.Directives.ForName("exclude") != nil {
+				continue
+			}
+
 			defs = append(defs, t)
 		}
 	}

@@ -7,16 +7,20 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-const basics = ` directive @unique on FIELD_DEFINITION
+const basics = `
+directive @unique on FIELD_DEFINITION
 directive @from(ref: String!) on FIELD_DEFINITION
 directive @immutable on FIELD_DEFINITION
 directive @default(value: String!) on FIELD_DEFINITION
+directive @response on OBJECT
+directive @out on OBJECT
+directive @exclude on OBJECT
 `
 
 func lifeSchemaSource() *ast.Source {
 	return &ast.Source{
 		Input:   basics,
-		Name:    "life.graphql",
+		Name:    "goent.graphql",
 		BuiltIn: true,
 	}
 }
