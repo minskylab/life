@@ -1,5 +1,6 @@
 type Query {
     todos(filter: TodosFilter): [Todo!]!
+    summaryTodos: SummaryTodos!
 }
 
 type Mutation {
@@ -10,4 +11,9 @@ type Mutation {
 input TodosFilter {
     how: Int
     first: Int
+}
+
+type SummaryTodos @out {
+    totalTodos: Int!
+    totalPending: Int!
 }
