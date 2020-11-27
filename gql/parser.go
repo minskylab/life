@@ -98,7 +98,7 @@ func fieldScalarGen(field *ast.FieldDefinition, fieldType jen.Code) jen.Code {
 	return &fieldStatement
 }
 
-func generateType(def *ast.Definition) *jen.File {
+func generateType(enums map[string]*ast.Definition, def *ast.Definition) *jen.File {
 	m := jen.NewFile("schema")
 
 	m.ImportName("github.com/facebook/ent", "ent")
@@ -109,15 +109,16 @@ func generateType(def *ast.Definition) *jen.File {
 		jen.Qual("github.com/facebook/ent", "Schema"),
 	)
 
-	log.Println("---- " + def.Name)
-
 	forFields := []*ast.FieldDefinition{}
 	forEdges := []*ast.FieldDefinition{}
 
 	for _, field := range def.Fields {
 		_, isKnownScalar := entScalars[field.Type.Name()]
+		_, enumExists := enums[field.Type.Name()]
 		if isKnownScalar {
 			forFields = append(forFields, field)
+		} else if enumExists {
+			// enums
 		} else {
 			forEdges = append(forEdges, field)
 		}
@@ -128,11 +129,11 @@ func generateType(def *ast.Definition) *jen.File {
 		jen.Return(
 			jen.Index().Qual("github.com/facebook/ent", "Field").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forFields {
+					var f *jen.Statement = jen.Line()
+
 					fieldScalar := *entScalars[field.Type.Name()]
 
-					log.Println("- field ", field.Name, field.Type.Name())
-
-					f := fieldScalar.Call(jen.Lit(field.Name))
+					f.Add(fieldScalar.Call(jen.Lit(field.Name)))
 
 					if field.Type.NonNull && field.Type.Name() != "Boolean" {
 						f.Dot("NotEmpty").Call()
@@ -149,7 +150,6 @@ func generateType(def *ast.Definition) *jen.File {
 							f.Dot("Immutable").Call()
 						case "default":
 							valueArg := directive.Arguments.ForName("value")
-
 							if valueArg != nil {
 								f.Dot("Default").Call(
 									jen.Id(valueArg.Value.String()),
@@ -159,9 +159,9 @@ func generateType(def *ast.Definition) *jen.File {
 							continue
 						}
 					}
-					// g.Comment("str string")
 					g.Add(f)
 				}
+				g.Line()
 			}),
 		),
 	)
@@ -173,15 +173,14 @@ func generateType(def *ast.Definition) *jen.File {
 		jen.Return(
 			jen.Index().Qual("github.com/facebook/ent", "Edge").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forEdges {
-					log.Println("- edge ", field.Name, field.Type.Name())
-					var e *jen.Statement
+					var e *jen.Statement = jen.Line()
 
 					if field.Directives.ForName("from") != nil {
-						e = jen.Qual("github.com/facebook/ent/schema/edge", "From")
+						e.Qual("github.com/facebook/ent/schema/edge", "From")
 					} else if field.Directives.ForName("to") != nil {
-						e = jen.Qual("github.com/facebook/ent/schema/edge", "To")
+						e.Qual("github.com/facebook/ent/schema/edge", "To")
 					} else { // default
-						e = jen.Qual("github.com/facebook/ent/schema/edge", "To")
+						e.Qual("github.com/facebook/ent/schema/edge", "To")
 					}
 
 					e.Call(
@@ -209,6 +208,7 @@ func generateType(def *ast.Definition) *jen.File {
 
 					g.Add(e)
 				}
+				g.Line()
 			}),
 		),
 	)
@@ -247,6 +247,9 @@ func generate(filepath string, folderOut string) {
 	}
 
 	defs := []*ast.Definition{}
+
+	enums := map[string]*ast.Definition{}
+
 	queries := []*ast.Definition{}
 	mutations := []*ast.Definition{}
 
@@ -262,7 +265,8 @@ func generate(filepath string, folderOut string) {
 		} else if t.Kind == ast.InputObject {
 			continue
 		} else if t.Kind == ast.Enum {
-			continue
+			// enums = append(enums, t)
+			enums[t.Name] = t
 		} else if t.Kind == ast.Interface {
 			continue
 		} else if t.Kind == ast.Scalar {
@@ -274,14 +278,10 @@ func generate(filepath string, folderOut string) {
 		}
 	}
 
-	// for _, def := range defs {
-	// 	log.Println(def.Name)
-	// }
-
 	generateTypes(folderOut, defs)
 }
 
 func main() {
 	// strcase.ConfigureAcronym
-	generate("example/schema.medium.graphql", "schema")
+	generate("example/schema.hard.graphql", "schema")
 }
