@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 
 	"github.com/iancoleman/strcase"
 
@@ -19,6 +19,14 @@ var scalars = map[string]jen.Code{
 	"Float":   jen.Float64(),
 	"Boolean": jen.Bool(),
 	"String":  jen.String(),
+}
+
+var entScalars = map[string]*jen.Statement{
+	"ID":      jen.Qual("github.com/facebook/ent/schema/field", "String"),
+	"Int":     jen.Qual("github.com/facebook/ent/schema/field", "Int"),
+	"Float":   jen.Qual("github.com/facebook/ent/schema/field", "Float64"),
+	"Boolean": jen.Qual("github.com/facebook/ent/schema/field", "Boolean"),
+	"String":  jen.Qual("github.com/facebook/ent/schema/field", "String"),
 }
 
 func openSchemaSource(filepath string) (*ast.Source, error) {
@@ -90,106 +98,145 @@ func fieldScalarGen(field *ast.FieldDefinition, fieldType jen.Code) jen.Code {
 	return &fieldStatement
 }
 
-func generateTypes(definitions []*ast.Definition) *jen.File {
-	m := jen.NewFile("models")
+func generateType(def *ast.Definition) *jen.File {
+	m := jen.NewFile("schema")
 
-	m.Type().Id("ID").String().Line()
-	m.Type().Id("DateTime").Qual("time", "Time").Line()
-	m.Type().Id("Time").Qual("time", "Time").Line()
-	m.Type().Id("Map").Map(jen.String()).Interface().Line()
-	m.Type().Id("Upload").Qual("io", "Reader").Line()
+	m.ImportName("github.com/facebook/ent", "ent")
+	m.ImportName("github.com/facebook/ent/schema/field", "field")
+	m.ImportName("github.com/facebook/ent/schema/edge", "edge")
 
-	for _, def := range definitions {
-		if def.Kind == ast.Enum {
-			m.Type().Id(def.Name).String().Line()
-			for _, val := range def.EnumValues {
-				// log.Println(val.Name)
-				constName := strcase.ToScreamingSnake(def.Name + "_" + val.Name)
-				m.Const().Id(constName).Id(def.Name).Op("=").Lit(val.Name)
-			}
-		} else if def.Kind == ast.Scalar {
-			continue
+	m.Type().Id(def.Name).Struct(
+		jen.Qual("github.com/facebook/ent", "Schema"),
+	)
+
+	log.Println("---- " + def.Name)
+
+	forFields := []*ast.FieldDefinition{}
+	forEdges := []*ast.FieldDefinition{}
+
+	for _, field := range def.Fields {
+		_, isKnownScalar := entScalars[field.Type.Name()]
+		if isKnownScalar {
+			forFields = append(forFields, field)
 		} else {
-			fields := []jen.Code{}
-			queryFields := []*ast.FieldDefinition{}
-
-			for _, field := range def.Fields {
-				fieldType, isKnowScalar := scalars[field.Type.Name()]
-
-				if isKnowScalar {
-					fields = append(fields, fieldScalarGen(field, fieldType))
-				} else {
-					queryFields = append(queryFields, field)
-				}
-			}
-
-			if def.IsInputType() {
-				for _, field := range queryFields {
-					fieldType := fieldTypeGen(field.Type)
-					fields = append(fields, &jen.Statement{jen.Id(field.Name), fieldType})
-				}
-			}
-
-			// root struct type
-			m.Comment(fmt.Sprintf("%s is kind %s", def.Name, string(def.Kind)))
-			m.Type().Id(def.Name).Struct(fields...).Line()
-
-			// dynamics
-
-			if !def.IsInputType() {
-				for _, field := range queryFields {
-					args := []jen.Code{}
-					for _, arg := range field.Arguments {
-						fieldType, isKnowScalar := scalars[arg.Type.Name()]
-
-						if isKnowScalar {
-							sts := jen.Statement{jen.Id(arg.Name)}
-							if !arg.Type.NonNull {
-								sts = append(sts, jen.Op("*"))
-							}
-							sts = append(sts, fieldType)
-							args = append(args, &sts)
-						} else {
-							t := fieldTypeGen(arg.Type)
-							args = append(args, &jen.Statement{jen.Id(arg.Name), t})
-						}
-
-					}
-					name := strcase.ToCamel(field.Name)
-					m.Func().Params(
-						jen.Id(strcase.ToLowerCamel(def.Name)).Op("*").Id(def.Name),
-					).Id(name).Params(
-						args...,
-					).Parens(jen.List(
-						fieldTypeGen(field.Type),
-						jen.Error(),
-					)).Block(
-						// jen.Comment("unimplemented"),
-						jen.Panic(jen.Lit("unimplemented builder")),
-						// jen.Return(jen.Nil(), jen.Nil()),
-					).Line()
-				}
-			}
+			forEdges = append(forEdges, field)
 		}
-
 	}
 
+	m.Func().Parens(jen.Id(def.Name)).Id("Fields").Params().
+		Index().Qual("github.com/facebook/ent", "Field").Block(
+		jen.Return(
+			jen.Index().Qual("github.com/facebook/ent", "Field").ValuesFunc(func(g *jen.Group) {
+				for _, field := range forFields {
+					fieldScalar := entScalars[field.Type.Name()]
+
+					log.Println("- field ", field.Name, field.Type.Name())
+
+					f := fieldScalar.Call(jen.Lit(field.Name))
+
+					if field.Type.NonNull {
+						f.Dot("NotEmpty").Call()
+					}
+
+					// f.Render(os.Stdout)
+					// if field.Type
+
+					for _, directive := range field.Directives {
+						switch directive.Name {
+						case "unique":
+							f.Dot("Unique").Call()
+						case "immutable":
+							f.Dot("Immutable").Call()
+						case "default":
+							valueArg := directive.Arguments.ForName("value")
+
+							if valueArg != nil {
+								f.Dot("Default").Call(
+									jen.Id(valueArg.Value.String()),
+								)
+							}
+						default:
+							continue
+						}
+					}
+					// g.Comment("str string")
+					g.Add(f)
+				}
+			}),
+		),
+	)
+
+	m.Line()
+
+	m.Func().Parens(jen.Id(def.Name)).Id("Edges").Params().
+		Index().Qual("github.com/facebook/ent", "Edge").Block(
+		jen.Return(
+			jen.Index().Qual("github.com/facebook/ent", "Edge").ValuesFunc(func(g *jen.Group) {
+				for _, field := range forEdges {
+					log.Println("- edge ", field.Name, field.Type.Name())
+					var e *jen.Statement
+
+					if field.Directives.ForName("from") != nil {
+						e = g.Qual("github.com/facebook/ent/schema/edge", "From")
+					} else if field.Directives.ForName("to") != nil {
+						e = g.Qual("github.com/facebook/ent/schema/edge", "To")
+					} else { // default
+						e = g.Qual("github.com/facebook/ent/schema/edge", "To")
+					}
+
+					e.Call(
+						jen.Lit(field.Name),
+						jen.Id(field.Type.Name()).Dot("Type"),
+					)
+
+					refValue := ""
+
+					if field.Directives.ForName("from") != nil {
+						ref := field.Directives.ForName("from").Arguments.ForName("ref")
+						if ref != nil {
+							refValue = ref.Value.String()
+							e.Dot("Ref").Call(jen.Lit(refValue))
+						}
+					}
+
+					if field.Type.Elem == nil { // unique
+						e.Dot("Unique").Call()
+					}
+
+					if field.Type.NonNull {
+						e.Dot("Required").Call()
+					}
+
+					g.Add(e)
+				}
+
+				g.Line()
+			}),
+		),
+	)
+
 	return m
 }
 
-func generateQueries(definitions []*ast.Definition) *jen.File {
-	m := jen.NewFile("models")
+func generateTypes(folder string, definitions []*ast.Definition) {
+	for _, def := range definitions {
+		entitityFile := generateType(def)
 
-	return m
+		filepath := path.Join(folder, strcase.ToLowerCamel(def.Name)+".go")
+		f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE, 0660)
+		if err != nil {
+			panic(err)
+		}
+
+		defer f.Close()
+
+		if err = entitityFile.Render(f); err != nil {
+			panic(err)
+		}
+	}
 }
 
-func generateMutations(definitions []*ast.Definition) *jen.File {
-	m := jen.NewFile("models")
-
-	return m
-}
-
-func generate(filepath string) {
+func generate(filepath string, folderOut string) {
 	source, err := openSchemaSource(filepath)
 	if err != nil {
 		panic(err)
@@ -210,46 +257,33 @@ func generate(filepath string) {
 			queries = append(queries, t)
 		} else if t.Name == "Mutation" {
 			mutations = append(mutations, t)
-		} else if !t.BuiltIn {
+		} else if t.Name == "Subscription" {
+			continue
+		} else if t.BuiltIn {
+			continue
+		} else if t.Kind == ast.InputObject {
+			continue
+		} else if t.Kind == ast.Enum {
+			continue
+		} else if t.Kind == ast.Interface {
+			continue
+		} else if t.Kind == ast.Scalar {
+			continue
+		} else if t.Kind == ast.Union {
+			continue
+		} else {
 			defs = append(defs, t)
 		}
 	}
 
-	modelsFile := generateTypes(defs)
-	f, err := os.OpenFile("models/models.go", os.O_RDWR|os.O_CREATE, 0660)
-	if err != nil {
-		panic(err)
-	}
+	// for _, def := range defs {
+	// 	log.Println(def.Name)
+	// }
 
-	defer f.Close()
-
-	if err = modelsFile.Render(f); err != nil {
-		panic(err)
-	}
-
-	queriesFile := generateQueries(queries)
-	f, err = os.OpenFile("models/queries.go", os.O_RDWR|os.O_CREATE, 0660)
-	if err != nil {
-		panic(err)
-	}
-
-	if err = queriesFile.Render(f); err != nil {
-		panic(err)
-	}
-
-	mutationsFile := generateMutations(mutations)
-	f, err = os.OpenFile("models/mutations.go", os.O_RDWR|os.O_CREATE, 0660)
-	if err != nil {
-		panic(err)
-	}
-
-	if err = mutationsFile.Render(f); err != nil {
-		panic(err)
-	}
-
+	generateTypes(folderOut, defs)
 }
 
 func main() {
 	// strcase.ConfigureAcronym
-	generate("example/schema.hard.graphql")
+	generate("example/schema.medium.graphql", "schema")
 }

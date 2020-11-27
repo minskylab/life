@@ -6,13 +6,9 @@ import (
 )
 
 type ID string
-
 type DateTime time.Time
-
 type Time time.Time
-
 type Map map[string]interface{}
-
 type Upload io.Reader
 
 // JobProfileExtraRequeriments is kind OBJECT
