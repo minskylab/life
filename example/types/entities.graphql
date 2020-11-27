@@ -1,0 +1,13 @@
+type Autor {
+    id: ID!
+    name: String!
+    signature: String @unique
+    todos: [Todo!]!
+}
+
+type Todo {
+    id: ID!
+    title: String!
+    done: Boolean!
+    owner: Autor @from(ref: "todos")
+}
