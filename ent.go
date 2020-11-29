@@ -6,9 +6,8 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-func generate(filepath string, folderOut string) error {
-
-	sources, err := openSchemaSources(filepath)
+func generate(filepath string, folderOut string, withGoEntBasics bool) error {
+	sources, err := openSchemaSources(filepath, withGoEntBasics)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -20,15 +19,11 @@ func generate(filepath string, folderOut string) error {
 
 	defs := []*ast.Definition{}
 	enums := map[string]*ast.Definition{}
-	// queries := []*ast.Definition{}
-	// mutations := []*ast.Definition{}
 
 	for _, t := range sch.Types {
 		if t.Name == "Query" { // make something with mutations and queries
-			// queries = append(queries, t)
 			continue
 		} else if t.Name == "Mutation" {
-			// mutations = append(mutations, t)
 			continue
 		} else if t.Name == "Subscription" {
 			continue

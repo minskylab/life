@@ -25,25 +25,12 @@ func lifeSchemaSource() *ast.Source {
 	}
 }
 
-func openSchemaSources(path string) ([]*ast.Source, error) {
-	// info, err := os.Stat(path)
-	// if err != nil {
-	// 	return nil, err
-	// }
+func openSchemaSources(path string, withGoEntBasics bool) ([]*ast.Source, error) {
+	sources := []*ast.Source{}
 
-	// if os.IsNotExist(err) {
-	// 	return nil, errors.New("file/dir does not exist")
-	// }
-
-	sources := []*ast.Source{
-		lifeSchemaSource(),
+	if withGoEntBasics {
+		sources = append(sources, lifeSchemaSource())
 	}
-
-	// if info.IsDir() {
-	// 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-
-	// 	})
-	// }
 
 	files, err := filepath.Glob(path)
 	if err != nil {
