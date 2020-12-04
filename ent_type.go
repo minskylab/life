@@ -63,18 +63,22 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 
 					if fieldTypeName == "Map" {
 						f.Add(fieldScalar.Call(jen.Lit(field.Name), jen.Map(jen.String()).Interface().Values()))
-						// } else if fieldTypeName == "ID" {
-						// 	f.Add(fieldScalar.Call(jen.Lit(field.Name), lifeID))
 					} else {
-						f.Add(fieldScalar.Call(jen.Lit(field.Name)))
+						if field.Type.Elem != nil {
+							fieldArrScalar, exist := entScalarArrays[fieldTypeName]
+							if exist {
+								f.Add(fieldArrScalar.Call(jen.Lit(field.Name)))
+							} else {
+								f.Add(fieldScalar.Call(jen.Lit(field.Name)))
+							}
+						} else {
+							f.Add(fieldScalar.Call(jen.Lit(field.Name)))
+						}
 					}
 
 					if !field.Type.NonNull {
 						f.Dot("Optional").Call()
 					}
-
-					// f.Render(os.Stdout)
-					// if field.Type
 
 					for _, directive := range field.Directives {
 						switch directive.Name {
