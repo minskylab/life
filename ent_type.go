@@ -13,7 +13,7 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 	m.ImportName("github.com/facebook/ent", "ent")
 	m.ImportName("github.com/facebook/ent/schema/field", "field")
 	m.ImportName("github.com/facebook/ent/schema/edge", "edge")
-	m.ImportName("github.com/minskylab/life/scalars", "scalars")
+	// m.ImportName("github.com/minskylab/life/scalars", "scalars")
 
 	m.Line()
 
@@ -45,59 +45,45 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 		jen.Return(
 			jen.Index().Qual("github.com/facebook/ent", "Field").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forFields {
-					var f *jen.Statement = jen.Line()
+					var fField *jen.Statement = jen.Line()
 					fieldTypeName := field.Type.Name()
 
 					fieldScalar := *entScalars[fieldTypeName]
 
 					if fieldTypeName == "ID" { // special case ID scalar
-						f.Add(
+						fField.Add(
 							fieldScalar.Call(jen.Lit(field.Name)).
 								Dot("NotEmpty").Call().
 								Dot("Unique").Call().
 								Dot("Immutable").Call(),
 						)
-						g.Add(f)
+						g.Add(fField)
 						continue
 					}
 
 					if fieldTypeName == "Map" {
-						f.Add(fieldScalar.Call(jen.Lit(field.Name), jen.Map(jen.String()).Interface().Values()))
+						fField.Add(fieldScalar.Call(jen.Lit(field.Name), jen.Map(jen.String()).Interface().Values()))
 					} else {
 						if field.Type.Elem != nil {
 							fieldArrScalar, exist := entScalarArrays[fieldTypeName]
 							if exist {
-								f.Add(fieldArrScalar.Call(jen.Lit(field.Name)))
+								fField.Add(fieldArrScalar.Call(jen.Lit(field.Name)))
 							} else {
-								f.Add(fieldScalar.Call(jen.Lit(field.Name)))
+								fField.Add(fieldScalar.Call(jen.Lit(field.Name)))
 							}
 						} else {
-							f.Add(fieldScalar.Call(jen.Lit(field.Name)))
+							fField.Add(fieldScalar.Call(jen.Lit(field.Name)))
 						}
 					}
 
 					if !field.Type.NonNull {
-						f.Dot("Optional").Call()
+						fField.Dot("Optional").Call()
 					}
 
 					for _, directive := range field.Directives {
-						switch directive.Name {
-						case "unique":
-							f.Dot("Unique").Call()
-						case "immutable":
-							f.Dot("Immutable").Call()
-						case "default":
-							valueArg := directive.Arguments.ForName("value")
-							if valueArg != nil {
-								f.Dot("Default").Call(
-									jen.Id(valueArg.Value.String()),
-								)
-							}
-						default:
-							continue
-						}
+						applyFieldDirective(directive, fField)
 					}
-					g.Add(f)
+					g.Add(fField)
 				}
 				g.Line()
 			}),
@@ -112,40 +98,42 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 		jen.Return(
 			jen.Index().Qual("github.com/facebook/ent", "Edge").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forEdges {
-					var e *jen.Statement = jen.Line()
+					var fEdge *jen.Statement = jen.Line()
 
 					if field.Directives.ForName("from") != nil {
-						e.Qual("github.com/facebook/ent/schema/edge", "From")
+						fEdge.Qual("github.com/facebook/ent/schema/edge", "From")
 					} else if field.Directives.ForName("to") != nil {
-						e.Qual("github.com/facebook/ent/schema/edge", "To")
+						fEdge.Qual("github.com/facebook/ent/schema/edge", "To")
 					} else { // default
-						e.Qual("github.com/facebook/ent/schema/edge", "To")
+						fEdge.Qual("github.com/facebook/ent/schema/edge", "To")
 					}
 
-					e.Call(
+					fEdge.Call(
 						jen.Lit(field.Name),
 						jen.Id(field.Type.Name()).Dot("Type"),
 					)
 
 					if field.Type.Elem == nil { // unique
-						e.Dot("Unique").Call()
+						fEdge.Dot("Unique").Call()
 					}
 
 					if field.Type.NonNull {
-						e.Dot("Required").Call()
+						fEdge.Dot("Required").Call()
 					}
 
-					refValue := ""
-
-					if field.Directives.ForName("from") != nil {
-						ref := field.Directives.ForName("from").Arguments.ForName("ref")
-						if ref != nil {
-							refValue = ref.Value.Raw
-							e.Dot("Ref").Call(jen.Lit(refValue))
-						}
+					for _, directive := range field.Directives {
+						applyEdgeDirective(directive, fEdge)
 					}
 
-					g.Add(e)
+					// if field.Directives.ForName("from") != nil {
+					// 	ref := field.Directives.ForName("from").Arguments.ForName("ref")
+					// 	if ref != nil {
+					// 		refValue = ref.Value.Raw
+					// 		fEdge.Dot("Ref").Call(jen.Lit(refValue))
+					// 	}
+					// }
+
+					g.Add(fEdge)
 				}
 				g.Line()
 			}),

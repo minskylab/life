@@ -21,7 +21,8 @@ func generate(filepath string, folderOut string, withGoEntBasics bool) error {
 	enums := map[string]*ast.Definition{}
 
 	for _, t := range sch.Types {
-		if t.Name == "Query" { // make something with mutations and queries
+		// make something (someday) with mutations and queries
+		if t.Name == "Query" {
 			continue
 		} else if t.Name == "Mutation" {
 			continue
@@ -32,6 +33,7 @@ func generate(filepath string, folderOut string, withGoEntBasics bool) error {
 		} else if t.Kind == ast.InputObject {
 			continue
 		} else if t.Kind == ast.Enum {
+			// collect enums
 			enums[t.Name] = t
 		} else if t.Kind == ast.Interface {
 			continue
