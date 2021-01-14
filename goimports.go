@@ -29,9 +29,9 @@ import (
 
 var (
 	// main operation modes
-	list   = flag.Bool("l", false, "list files whose formatting differs from goimport's")
-	write  = flag.Bool("w", false, "write result to (source) file instead of stdout")
-	doDiff = flag.Bool("d", false, "display diffs instead of rewriting files")
+	list  = flag.Bool("l", false, "list files whose formatting differs from goimport's")
+	write = flag.Bool("w", false, "write result to (source) file instead of stdout")
+	// doDiff = flag.Bool("d", false, "display diffs instead of rewriting files")
 	srcdir = flag.String("srcdir", "", "choose imports as if source code is from `dir`. When operating on a single file, dir may instead be the complete file name.")
 
 	verbose bool // verbose logging
@@ -171,20 +171,20 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 				return err
 			}
 		}
-		if *doDiff {
-			if argType == fromStdin {
-				filename = "stdin.go" // because <standard input>.orig looks silly
-			}
-			data, err := diff(src, res, filename)
-			if err != nil {
-				return fmt.Errorf("computing diff: %s", err)
-			}
-			fmt.Printf("diff -u %s %s\n", filepath.ToSlash(filename+".orig"), filepath.ToSlash(filename))
-			out.Write(data)
-		}
+		// if *doDiff {
+		// 	if argType == fromStdin {
+		// 		filename = "stdin.go" // because <standard input>.orig looks silly
+		// 	}
+		// 	data, err := diff(src, res, filename)
+		// 	if err != nil {
+		// 		return fmt.Errorf("computing diff: %s", err)
+		// 	}
+		// 	fmt.Printf("diff -u %s %s\n", filepath.ToSlash(filename+".orig"), filepath.ToSlash(filename))
+		// 	out.Write(data)
+		// }
 	}
 
-	if !*list && !*write && !*doDiff {
+	if !*list && !*write { //  && !*doDiff
 		_, err = out.Write(res)
 	}
 

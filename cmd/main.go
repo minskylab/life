@@ -3,34 +3,26 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/minskylab/life"
 )
 
+var source, outputDir string
+var directives, autoImport bool
+
 func main() {
+	flag.StringVar(&source, "s", "genesis/**/*.graphql", "Define your source as a path, or as a glob")
+	flag.BoolVar(&directives, "d", true, "With built-in directives")
+	flag.BoolVar(&autoImport, "a", true, "Active autoimport after generation")
+	flag.StringVar(&outputDir, "o", "ent/schema", "Set your output directory for your ent structures")
+
 	flag.Parse()
 
-	source := "genesis/**/*.graphql"
-	outputDir := "ent/schema"
-
-	ws := flag.Bool("wd", true, "With builtin directives")
-
-	args := os.Args
-
-	fmt.Println(args)
-
-	if len(args) == 1 {
-		source = args[0]
-	} else if len(args) > 1 {
-		source = args[0]
-		outputDir = args[1]
-	}
-
 	if err := life.GenerateEntities(source, outputDir, life.GenerationOptions{
-		EntDirectivesBuiltIn: *ws,
+		EntDirectivesBuiltIn: directives,
+		AutoImportProcessor:  autoImport,
 	}); err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%+v", err))
 	}
 
 }
