@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"time"
 
 	// "golang.org/x/tools/internal/gocommand"
 	// "golang.org/x/tools/internal/imports"
@@ -48,6 +49,7 @@ var (
 		// GocmdRunner: &gocommand.Runner{},
 		// },
 	}
+
 	exitCode = 0
 )
 
@@ -140,10 +142,14 @@ func processFile(filename string, in io.Reader, out io.Writer, argType argumentT
 		}
 	}
 
+	t1 := time.Now()
 	res, err := imports.Process(target, src, opt)
 	if err != nil {
 		return err
 	}
+	t2 := time.Now()
+
+	fmt.Printf("imports.Process: %s | target: %s\n", t2.Sub(t1), target)
 
 	if !bytes.Equal(src, res) {
 		// formatting has changed
@@ -203,7 +209,7 @@ func fixImports(dir string) {
 	verbose = false
 	*write = true
 
-	// runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// call gofmtMain in a separate function
 	// so that it can use defer and have them

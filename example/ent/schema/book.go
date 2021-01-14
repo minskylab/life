@@ -19,7 +19,7 @@ func (Book) Fields() []ent.Field {
 		field.String("id").NotEmpty().Unique().Immutable(),
 		field.Time("createdAt").Default(time.Now),
 		field.Time("updatedAt").UpdateDefault(time.Now),
-		field.Float("doi").Default(2.32),
+		field.Int64("doi").Default(2),
 		field.String("title"),
 		field.String("description"),
 	}

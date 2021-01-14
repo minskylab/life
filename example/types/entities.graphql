@@ -13,7 +13,7 @@ type Book @ent {
     createdAt: Time! @default(value: "time.Now")
     updatedAt: Time! @updateDefault(value: "time.Now")
 
-    doi: Float! @default(value: "2.32")
+    doi: Int! @default(value: "2")
     title: String!
     description: String!
 

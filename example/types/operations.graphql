@@ -13,7 +13,7 @@ input BooksFilter {
     first: Int
 }
 
-type SummaryBooks @out {
+type SummaryBooks {
     totalBooks: Int!
     totalPending: Int!
 }

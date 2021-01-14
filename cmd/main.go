@@ -28,7 +28,7 @@ func main() {
 	}
 
 	if err := life.GenerateEntities(source, outputDir, life.GenerationOptions{
-		WithGoEntDirectives: *ws,
+		EntDirectivesBuiltIn: *ws,
 	}); err != nil {
 		panic(err)
 	}
