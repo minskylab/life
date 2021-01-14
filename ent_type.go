@@ -125,14 +125,6 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 						applyEdgeDirective(directive, fEdge)
 					}
 
-					// if field.Directives.ForName("from") != nil {
-					// 	ref := field.Directives.ForName("from").Arguments.ForName("ref")
-					// 	if ref != nil {
-					// 		refValue = ref.Value.Raw
-					// 		fEdge.Dot("Ref").Call(jen.Lit(refValue))
-					// 	}
-					// }
-
 					g.Add(fEdge)
 				}
 				g.Line()

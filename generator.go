@@ -1,5 +1,7 @@
 package life
 
+import "github.com/pkg/errors"
+
 // GenerationOptions provides options to configure the entities generation
 type GenerationOptions struct {
 	WithGoEntDirectives bool
@@ -7,7 +9,13 @@ type GenerationOptions struct {
 
 // GenerateEntities generates your entgo entities from a graphql source.
 func GenerateEntities(source string, folderOut string, opts GenerationOptions) error {
-	return generate(source, folderOut, opts.WithGoEntDirectives)
+	if err := generate(source, folderOut, opts.WithGoEntDirectives); err != nil {
+		return errors.WithStack(err)
+	}
+
+	fixImports(folderOut)
+
+	return nil
 }
 
 // MustGenerateEntities generates your entgo entities from a graphql source.

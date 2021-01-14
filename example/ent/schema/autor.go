@@ -23,6 +23,6 @@ func (Autor) Fields() []ent.Field {
 // Edges of the Autor.
 func (Autor) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("todos", Todo.Type).Required(),
+		edge.To("books", Book.Type),
 	}
 }

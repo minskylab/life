@@ -5,7 +5,7 @@ import "github.com/dave/jennifer/jen"
 var entScalars = map[string]*jen.Statement{
 	"ID":       jen.Qual("github.com/facebook/ent/schema/field", "String"),
 	"Int":      jen.Qual("github.com/facebook/ent/schema/field", "Int64"),
-	"Float":    jen.Qual("github.com/facebook/ent/schema/field", "Float64"),
+	"Float":    jen.Qual("github.com/facebook/ent/schema/field", "Float"),
 	"Boolean":  jen.Qual("github.com/facebook/ent/schema/field", "Bool"),
 	"String":   jen.Qual("github.com/facebook/ent/schema/field", "String"),
 	"Map":      jen.Qual("github.com/facebook/ent/schema/field", "JSON"),

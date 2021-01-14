@@ -1,13 +1,21 @@
-type Autor {
+scalar Time
+
+type Autor @ent {
     id: ID!
     name: String!
     signature: String @unique
-    todos: [Todo!]!
+
+    books: [Book!]
 }
 
-type Todo {
+type Book @ent {
     id: ID!
+    createdAt: Time! @default(value: "time.Now")
+    updatedAt: Time! @updateDefault(value: "time.Now")
+
+    doi: Float! @default(value: "2.32")
     title: String!
-    done: Boolean!
-    owner: Autor @from(ref: "todos")
+    description: String!
+
+    owner: Autor! @from(ref: "books")
 }

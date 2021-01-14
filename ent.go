@@ -42,15 +42,11 @@ func generate(filepath string, folderOut string, withGoEntBasics bool) error {
 		} else if t.Kind == ast.Union {
 			continue
 		} else {
-			if t.Directives.ForName("response") != nil {
-				continue
-			}
-
 			if t.Directives.ForName("out") != nil {
 				continue
 			}
 
-			if t.Directives.ForName("exclude") != nil {
+			if t.Directives.ForName("ent") == nil {
 				continue
 			}
 

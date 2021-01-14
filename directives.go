@@ -1,9 +1,25 @@
 package life
 
 import (
+	"io"
+
 	"github.com/dave/jennifer/jen"
+	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/ast"
 )
+
+type customToken struct {
+	rawCode string
+}
+
+func (t *customToken) render(f *jen.File, w io.Writer, s *jen.Statement) error {
+	_, err := w.Write([]byte(t.rawCode))
+	return errors.WithStack(err)
+}
+
+func (t *customToken) isNull(f *jen.File) bool {
+	return false
+}
 
 func applyFieldDirective(directive *ast.Directive, s *jen.Statement) {
 	switch directive.Name {
@@ -26,9 +42,19 @@ func applyFieldDirective(directive *ast.Directive, s *jen.Statement) {
 		s.Dot("Sensitive").Call()
 	case "default":
 		valueArg := directive.Arguments.ForName("value")
+
 		if valueArg != nil {
 			s.Dot("Default").Call(
-				jen.Id(valueArg.Value.String()),
+				jen.Op(valueArg.Value.Raw),
+			)
+		}
+
+	case "updateDefault":
+		valueArg := directive.Arguments.ForName("value")
+
+		if valueArg != nil {
+			s.Dot("UpdateDefault").Call(
+				jen.Op(valueArg.Value.Raw),
 			)
 		}
 	default:

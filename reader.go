@@ -8,13 +8,20 @@ import (
 )
 
 const basics = `
-directive @unique on FIELD_DEFINITION
 directive @from(ref: String!) on FIELD_DEFINITION
+
+directive @unique on FIELD_DEFINITION
 directive @immutable on FIELD_DEFINITION
+directive @nillable on FIELD_DEFINITION
+directive @sensitive on FIELD_DEFINITION
+
+directive @storageKey(key: String!) on FIELD_DEFINITION
 directive @default(value: String!) on FIELD_DEFINITION
-directive @response on OBJECT
+directive @updateDefault(value: String!) on FIELD_DEFINITION
+
+directive @ent(name: String) on OBJECT
+
 directive @out on OBJECT
-directive @exclude on OBJECT
 `
 
 func lifeSchemaSource() *ast.Source {

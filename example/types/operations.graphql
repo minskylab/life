@@ -1,19 +1,19 @@
 type Query {
-    todos(filter: TodosFilter): [Todo!]!
-    summaryTodos: SummaryTodos!
+    books(filter: BooksFilter): [Book!]!
+    summaryBooks: SummaryBooks!
 }
 
 type Mutation {
-    addTodo(title: String!): Todo!
-    deleteTodo(id: ID!): Todo!
+    addBook(title: String!): Book!
+    deleteBook(id: ID!): Book!
 }
 
-input TodosFilter {
+input BooksFilter {
     how: Int
     first: Int
 }
 
-type SummaryTodos @out {
-    totalTodos: Int!
+type SummaryBooks @out {
+    totalBooks: Int!
     totalPending: Int!
 }
