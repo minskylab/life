@@ -65,8 +65,8 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 						fField.Add(fieldScalar.Call(jen.Lit(field.Name), jen.Map(jen.String()).Interface().Values()))
 					} else {
 						if field.Type.Elem != nil {
-							fieldArrScalar, exist := entScalarArrays[fieldTypeName]
-							if exist {
+							if _, exist := entScalarArrays[fieldTypeName]; exist {
+								fieldArrScalar := *entScalarArrays[fieldTypeName]
 								fField.Add(fieldArrScalar.Call(jen.Lit(field.Name)))
 							} else {
 								fField.Add(fieldScalar.Call(jen.Lit(field.Name)))
