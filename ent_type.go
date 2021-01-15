@@ -25,13 +25,22 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 	forFields := []*ast.FieldDefinition{}
 	forEdges := []*ast.FieldDefinition{}
 
+	fieldEnumType := map[string][]string{}
+
 	for _, field := range def.Fields {
 		_, isKnownScalar := entScalars[field.Type.Name()]
-		_, enumExists := enums[field.Type.Name()]
+		enumField, enumExists := enums[field.Type.Name()]
 		if isKnownScalar {
 			forFields = append(forFields, field)
 		} else if enumExists {
-			// enums
+			values := []string{}
+			for _, val := range enumField.EnumValues {
+				values = append(values, val.Name)
+			}
+
+			fieldEnumType[field.Name] = values
+
+			forFields = append(forFields, field)
 		} else {
 			forEdges = append(forEdges, field)
 		}
@@ -46,7 +55,14 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 			jen.Index().Qual("github.com/facebook/ent", "Field").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forFields {
 					var fField *jen.Statement = jen.Line()
+
 					fieldTypeName := field.Type.Name()
+					enumValues := []string{}
+
+					if values, exist := fieldEnumType[field.Name]; exist {
+						fieldTypeName = "Enum"
+						enumValues = values
+					}
 
 					fieldScalar := *entScalars[fieldTypeName]
 
@@ -76,6 +92,14 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 						}
 					}
 
+					if len(enumValues) > 0 {
+						fField.Dot("Values").CallFunc(func(g *jen.Group) {
+							for _, v := range enumValues {
+								g.Add(jen.Lit(v))
+							}
+						})
+					}
+
 					if !field.Type.NonNull {
 						fField.Dot("Optional").Call()
 					}
@@ -83,6 +107,7 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 					for _, directive := range field.Directives {
 						applyFieldDirective(directive, fField)
 					}
+
 					g.Add(fField)
 				}
 				g.Line()

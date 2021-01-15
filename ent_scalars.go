@@ -11,6 +11,7 @@ var entScalars = map[string]*jen.Statement{
 	"Map":      jen.Qual("github.com/facebook/ent/schema/field", "JSON"),
 	"Time":     jen.Qual("github.com/facebook/ent/schema/field", "Time"),
 	"DateTime": jen.Qual("github.com/facebook/ent/schema/field", "Time"),
+	"Enum":     jen.Qual("github.com/facebook/ent/schema/field", "Enum"),
 }
 
 var entScalarArrays = map[string]*jen.Statement{

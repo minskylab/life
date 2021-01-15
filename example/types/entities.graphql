@@ -13,9 +13,17 @@ type Book @ent {
     createdAt: Time! @default(value: "time.Now")
     updatedAt: Time! @updateDefault(value: "time.Now")
 
-    doi: Int! @default(value: "2")
+    kind: BookKind!
+
+    doi: String! @default(value: "\"2\"")
     title: String!
     description: String!
 
     owner: Autor! @from(ref: "books")
+}
+
+enum BookKind {
+    NOVEL
+    ESSAY
+    JOURNAL
 }
