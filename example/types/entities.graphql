@@ -1,6 +1,6 @@
 scalar Time
 
-type Autor @ent {
+type Autor @ent @exposed {
     id: ID!
     name: String!
     signature: String @unique

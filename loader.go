@@ -1,7 +1,6 @@
 package life
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
@@ -9,8 +8,6 @@ import (
 )
 
 func openSchemaSources(path string, withGoEntBasics bool) ([]*ast.Source, error) {
-	fmt.Printf("path: %s\n", path)
-
 	sources := []*ast.Source{}
 
 	if withGoEntBasics {

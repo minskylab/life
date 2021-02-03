@@ -7,7 +7,7 @@ import (
 func main() {
 	if err := life.GenerateEntities("types/*.graphql", "ent/schema", life.GenerationOptions{
 		EntDirectivesBuiltIn: true,
-		AutoImportProcessor:  true,
+		// AutoImportProcessor:  true,
 	}); err != nil {
 		panic(err)
 	}

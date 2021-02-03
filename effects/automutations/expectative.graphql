@@ -1,0 +1,79 @@
+input ActorCreator {
+    name: String!
+    signature: String
+    books: [BookSelectOrCreate!]
+}
+
+input ActorUpdate {
+    id: ID!
+
+    name: String
+    signature: String
+
+    addBooks: [BookSelectOrCreate!]
+    deleteBooks: [ID!]
+    updateBooks: [BookUpdate!]
+}
+
+input ActorSelectOrCreate {
+    fromID: ID
+    create: ActorCreator
+}
+
+extend type Mutation {
+    createActor(data: ActorCreator!): Actor!
+    createManyActors(data: [ActorCreator!]!): [Actor!]!
+
+    updateActor(data: ActorUpdate!): Actor!
+    updateManyActors(data: [ActorUpdate!]): [Actor!]!
+
+    deleteActor(id: ID!): Actor!
+    deleteActors(ids: [ID!]!): [Actor!]!
+}
+
+# ---
+
+input BookCreator {
+    createdAt: Time!
+    updatedAt: Time!
+
+    kind: BookKind!
+
+    doi: String!
+    title: String!
+    description: String!
+
+    owner: ActorSelectOrCreate!
+}
+
+input BookUpdate {
+    id: ID!
+
+    createdAt: Time
+    updatedAt: Time
+
+    kind: BookKind
+
+    doi: String
+    title: String
+    description: String
+
+    owner: ActorSelectOrCreate
+    updateOwner: ActorUpdate
+}
+
+input BookSelectOrCreate {
+    fromID: ID
+    create: BookCreator
+}
+
+extend type Mutation {
+    createBook(data: BookCreator!): Book!
+    createManyBooks(data: [BookCreator!]!): [Book!]!
+
+    updateBook(data: BookUpdate!): Book!
+    updateManyBooks(data: [BookUpdate!]): [Book!]!
+
+    deleteBook(id: ID!): Book!
+    deleteBooks(ids: [ID!]!): [Book!]!
+}
