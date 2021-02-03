@@ -20,10 +20,6 @@ type entityStructure struct {
 }
 
 func generateStructures(entity *ast.Definition) *entityStructure {
-	if entity.Kind != ast.Object {
-		return nil
-	}
-
 	scalars := []string{"ID", "Int", "Float", "Boolean", "String", "Map", "Time", "DateTime", "Enum"}
 
 	isScalar := func(typeName string) bool {

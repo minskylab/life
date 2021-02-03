@@ -11,7 +11,7 @@ type GenerationOptions struct {
 
 // GenerateEntities generates your entgo entities from a graphql source.
 func GenerateEntities(source string, folderOut string, opts GenerationOptions) error {
-	if err := generate(source, folderOut, opts.EntDirectivesBuiltIn); err != nil {
+	if err := generate(source, folderOut, opts); err != nil {
 		return errors.WithStack(err)
 	}
 

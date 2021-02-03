@@ -10,8 +10,8 @@ type Autor @ent @exposed {
 
 type Book @ent {
     id: ID!
-    createdAt: Time! @default(value: "time.Now")
-    updatedAt: Time! @updateDefault(value: "time.Now")
+    createdAt: Time!
+    updatedAt: Time!
 
     kind: BookKind!
 

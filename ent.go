@@ -1,15 +1,23 @@
 package life
 
 import (
+	"io"
+	"os"
+	"path"
+
 	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-func generate(filepath string, folderOut string, withGoEntBasics bool) error {
-	sources, err := openSchemaSources(filepath, withGoEntBasics)
+func generate(filepath string, folderOut string, opts GenerationOptions) error {
+	sources, err := openSchemaSources(filepath, opts.EntDirectivesBuiltIn)
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	for _, effect := range opts.Effects {
+		sources = append(sources, effect.Directives)
 	}
 
 	sch, gqlErr := gqlparser.LoadSchema(sources...)
@@ -54,5 +62,27 @@ func generate(filepath string, folderOut string, withGoEntBasics bool) error {
 		}
 	}
 
-	return generateTypes(folderOut, defs, enums)
+	if err := generateTypes(folderOut, defs, enums); err != nil {
+		return errors.WithStack(err)
+	}
+
+	for _, effect := range opts.Effects {
+		for fName, emergence := range effect.Generator(sch) {
+			filepath := path.Join(effect.OutputLocation, fName)
+			file, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0644)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			if _, err = io.Copy(file, emergence); err != nil {
+				return errors.WithStack(err)
+			}
+
+			if err := file.Close(); err != nil {
+				return errors.WithStack(err)
+			}
+		}
+	}
+
+	return nil
 }

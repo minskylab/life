@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
@@ -17,8 +15,8 @@ type Book struct {
 func (Book) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").NotEmpty().Unique().Immutable(),
-		field.Time("createdAt").Default(time.Now),
-		field.Time("updatedAt").UpdateDefault(time.Now),
+		field.Time("createdAt"),
+		field.Time("updatedAt"),
 		field.Enum("kind").Values("NOVEL", "ESSAY", "JOURNAL"),
 		field.String("doi").Default("2"),
 		field.String("title"),
