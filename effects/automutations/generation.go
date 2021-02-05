@@ -73,6 +73,14 @@ func (effect *EmergentEffect) mutationsGenerator(schema *ast.Schema, tpl templat
 				continue
 			}
 
+			if len(dep.Fields) < 1 {
+				continue
+			}
+
+			if dep.Kind != ast.Object {
+				continue
+			}
+
 			toGenerate[dep.Name] = true
 		}
 	}

@@ -83,6 +83,8 @@ func generate(filepath string, folderOut string, opts GenerationOptions) error {
 				return errors.WithStack(err)
 			}
 
+			_ = file.Truncate(0) // delete all current content
+
 			if _, err = io.Copy(file, emergence); err != nil {
 				return errors.WithStack(err)
 			}
