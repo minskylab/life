@@ -1,0 +1,34 @@
+# --- Autor
+
+input AutorCreator {
+    name: String!
+    signature: String
+
+    books: [BookSelectOrCreate!]
+}
+
+input AutorUpdate {
+    id: ID!
+    name: String
+    signature: String
+
+    addBooks: [BookSelectOrCreate!]
+    deleteBooks: [ID!]
+    updateBooks: [BookUpdate!]
+}
+
+input AutorSelectOrCreate {
+    fromID: ID
+    create: AutorCreator
+}
+
+extend type Mutation {
+    createAutor(data: AutorCreator!): Autor!
+    createManyAutors(data: [AutorCreator!]!): [Autor!]!
+
+    updateAutor(data: AutorUpdate!): Autor!
+    updateManyAutors(data: [AutorUpdate!]): [Autor!]!
+
+    deleteAutor(id: ID!): Autor!
+    deleteAutors(ids: [ID!]!): [Autor!]!
+}

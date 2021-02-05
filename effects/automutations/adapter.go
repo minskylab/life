@@ -19,18 +19,18 @@ type entityStructure struct {
 	RelationFields map[string]entityField
 }
 
-func generateStructures(entity *ast.Definition) *entityStructure {
-	scalars := []string{"ID", "Int", "Float", "Boolean", "String", "Map", "Time", "DateTime", "Enum"}
+var scalars = []string{"ID", "Int", "Float", "Boolean", "String", "Map", "Time", "DateTime", "Enum"}
 
-	isScalar := func(typeName string) bool {
-		for _, s := range scalars {
-			if s == typeName {
-				return true
-			}
+func isScalar(typeName string) bool {
+	for _, s := range scalars {
+		if s == typeName {
+			return true
 		}
-		return false
 	}
+	return false
+}
 
+func generateStructure(entity *ast.Definition) *entityStructure {
 	pluralize := pluralize.NewClient()
 
 	structure := &entityStructure{
@@ -42,6 +42,10 @@ func generateStructures(entity *ast.Definition) *entityStructure {
 
 	for _, field := range entity.Fields {
 		name := field.Type.Name()
+
+		if field.Name == "id" {
+			continue
+		}
 
 		isMultiple := false
 		if field.Type.Elem != nil {

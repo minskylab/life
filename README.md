@@ -1,7 +1,7 @@
 # Life Project
 
 Life project is a initiative to create a toolkit to automatize the generation of
-any system based in entities and their relations.
+any system based in entities and their relations. To bring\* your ideas to life.
 
 ## Current state
 

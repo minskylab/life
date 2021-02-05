@@ -17,7 +17,7 @@ func generate(filepath string, folderOut string, opts GenerationOptions) error {
 	}
 
 	for _, effect := range opts.Effects {
-		sources = append(sources, effect.Directives)
+		sources = append(sources, effect.Directives())
 	}
 
 	sch, gqlErr := gqlparser.LoadSchema(sources...)
@@ -67,8 +67,17 @@ func generate(filepath string, folderOut string, opts GenerationOptions) error {
 	}
 
 	for _, effect := range opts.Effects {
-		for fName, emergence := range effect.Generator(sch) {
-			filepath := path.Join(effect.OutputLocation, fName)
+		// effect.Generator()()
+		generativeEffect, err := effect.Generator(sch)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		for fName, emergence := range generativeEffect {
+			filepath := path.Join(effect.OutputLocation(), fName)
+
+			// fmt.Println("emergence: " + filepath)
+
 			file, err := os.OpenFile(filepath, os.O_CREATE|os.O_RDWR, 0644)
 			if err != nil {
 				return errors.WithStack(err)

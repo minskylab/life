@@ -5,7 +5,6 @@ go 1.15
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/dave/jennifer v1.4.1
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgryski/trifles v0.0.0-20200830180326-aaf60a07f6a3 // indirect
 	github.com/facebook/ent v0.5.4
 	github.com/gertd/go-pluralize v0.1.7

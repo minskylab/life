@@ -6,7 +6,7 @@ import "github.com/pkg/errors"
 type GenerationOptions struct {
 	EntDirectivesBuiltIn bool
 	AutoImportProcessor  bool
-	Effects              []*EmergentEffect
+	Effects              []EmergentEffect
 }
 
 // GenerateEntities generates your entgo entities from a graphql source.

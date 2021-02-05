@@ -1,32 +1,26 @@
-# ---
+# --- Book
 
 input BookCreator {
     createdAt: Time!
-    updatedAt: Time!
-
-    kind: BookKind!
-
+    description: String!
     doi: String!
     title: String!
-    description: String!
-
-    owner: ActorSelectOrCreate!
+    updatedAt: Time!
+    
+    kind: BookKindSelectOrCreate!
+    owner: AutorSelectOrCreate!
 }
 
 input BookUpdate {
     id: ID!
-
     createdAt: Time
-    updatedAt: Time
-
-    kind: BookKind
-
+    description: String
     doi: String
     title: String
-    description: String
-
-    owner: ActorSelectOrCreate
-    updateOwner: ActorUpdate
+    updatedAt: Time
+    
+    kind: BookKindSelectOrCreate
+    owner: AutorSelectOrCreate
 }
 
 input BookSelectOrCreate {
@@ -43,4 +37,5 @@ extend type Mutation {
 
     deleteBook(id: ID!): Book!
     deleteBooks(ids: [ID!]!): [Book!]!
+}
 }

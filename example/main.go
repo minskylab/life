@@ -6,12 +6,15 @@ import (
 )
 
 func main() {
+	autoMut, err := automutations.NewAutoMutationEffect("./mutations")
+	if err != nil {
+		panic(err)
+	}
+
 	if err := life.GenerateEntities("types/*.graphql", "ent/schema", life.GenerationOptions{
 		EntDirectivesBuiltIn: true,
 		// AutoImportProcessor:  true,
-		Effects: []*life.EmergentEffect{
-			automutations.NewAutoMutation("./mutations"),
-		},
+		Effects: []life.EmergentEffect{autoMut},
 	}); err != nil {
 		panic(err)
 	}
