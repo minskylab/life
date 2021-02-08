@@ -7,19 +7,21 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
+const entBasePath = "entgo.io/ent"
+
 func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.File {
 	m := jen.NewFile("schema")
 
-	m.ImportName("github.com/facebook/ent", "ent")
-	m.ImportName("github.com/facebook/ent/schema/field", "field")
-	m.ImportName("github.com/facebook/ent/schema/edge", "edge")
+	m.ImportName(entBasePath, "ent")
+	m.ImportName(entBasePath+"/schema/field", "field")
+	m.ImportName(entBasePath+"/schema/edge", "edge")
 	// m.ImportName("github.com/minskylab/life/scalars", "scalars")
 
 	m.Line()
 
 	m.Comment(fmt.Sprintf("%s  holds the schema definition for the %s entity.", def.Name, def.Name))
 	m.Type().Id(def.Name).Struct(
-		jen.Qual("github.com/facebook/ent", "Schema"),
+		jen.Qual(entBasePath, "Schema"),
 	)
 
 	forFields := []*ast.FieldDefinition{}
@@ -50,9 +52,9 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 
 	m.Comment(fmt.Sprintf("Fields of the %s.", def.Name))
 	m.Func().Parens(jen.Id(def.Name)).Id("Fields").Params().
-		Index().Qual("github.com/facebook/ent", "Field").Block(
+		Index().Qual(entBasePath, "Field").Block(
 		jen.Return(
-			jen.Index().Qual("github.com/facebook/ent", "Field").ValuesFunc(func(g *jen.Group) {
+			jen.Index().Qual(entBasePath, "Field").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forFields {
 					var fField *jen.Statement = jen.Line()
 
@@ -119,18 +121,18 @@ func generateType(def *ast.Definition, enums map[string]*ast.Definition) *jen.Fi
 
 	m.Comment(fmt.Sprintf("Edges of the %s.", def.Name))
 	m.Func().Parens(jen.Id(def.Name)).Id("Edges").Params().
-		Index().Qual("github.com/facebook/ent", "Edge").Block(
+		Index().Qual(entBasePath, "Edge").Block(
 		jen.Return(
-			jen.Index().Qual("github.com/facebook/ent", "Edge").ValuesFunc(func(g *jen.Group) {
+			jen.Index().Qual(entBasePath, "Edge").ValuesFunc(func(g *jen.Group) {
 				for _, field := range forEdges {
 					var fEdge *jen.Statement = jen.Line()
 
 					if field.Directives.ForName("from") != nil {
-						fEdge.Qual("github.com/facebook/ent/schema/edge", "From")
+						fEdge.Qual(entBasePath+"/schema/edge", "From")
 					} else if field.Directives.ForName("to") != nil {
-						fEdge.Qual("github.com/facebook/ent/schema/edge", "To")
+						fEdge.Qual(entBasePath+"/schema/edge", "To")
 					} else { // default
-						fEdge.Qual("github.com/facebook/ent/schema/edge", "To")
+						fEdge.Qual(entBasePath+"/schema/edge", "To")
 					}
 
 					fEdge.Call(

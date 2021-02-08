@@ -6,7 +6,7 @@ input BookCreator {
     doi: String!
     title: String!
     updatedAt: Time!
-
+    
     kind: BookKindSelectOrCreate!
     owner: AutorSelectOrCreate!
 }
@@ -18,7 +18,7 @@ input BookUpdate {
     doi: String
     title: String
     updatedAt: Time
-
+    
     kind: BookKindSelectOrCreate
     owner: AutorSelectOrCreate
 }
