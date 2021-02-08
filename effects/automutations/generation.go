@@ -35,19 +35,19 @@ func isValidType(t *ast.Definition) bool {
 	return true
 }
 
-func (effect *EmergentEffect) recursiveDeps(current *ast.Definition, types map[string]*ast.Definition, deps *dependencies) dependencies {
+func (effect *EmergentEffect) recursiveDeps(current *ast.Definition, types map[string]*ast.Definition, deps dependencies) dependencies {
 	if deps == nil {
-		deps = &dependencies{}
+		deps = dependencies{}
 	}
 
 	if current == nil {
 		for tName, t := range types {
 			if isValidType(t) {
-				(*deps)[tName] = member
+				deps[tName] = member
 
 				newDeps := effect.recursiveDeps(t, types, deps)
 				for d := range newDeps {
-					(*deps)[d] = member
+					deps[d] = member
 				}
 			}
 		}
@@ -58,19 +58,24 @@ func (effect *EmergentEffect) recursiveDeps(current *ast.Definition, types map[s
 				continue
 			}
 
-			_, exists := (*deps)[fName]
+			_, exists := deps[fName]
 
 			if exists || types[fName].Kind != ast.Object {
 				continue
 			}
 
-			(*deps)[fName] = member
+			deps[fName] = member
 
-			return effect.recursiveDeps(types[fName], types, deps)
+			newDeps := effect.recursiveDeps(types[fName], types, deps)
+			for d := range newDeps {
+				deps[d] = member
+			}
+
+			// return deps
 		}
 	}
 
-	return *deps
+	return deps
 }
 
 func (effect *EmergentEffect) mutationsGenerator(schema *ast.Schema, tpl template.Template) (map[string]io.Reader, error) {
