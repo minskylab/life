@@ -11,7 +11,11 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-type dependenciesTree map[string][]string
+type void struct{}
+
+var member void
+
+type dependencies map[string]void
 
 const exposedDirectiveName = "exposed"
 
@@ -31,62 +35,58 @@ func isValidType(t *ast.Definition) bool {
 	return true
 }
 
+func (effect *EmergentEffect) recursiveDeps(current *ast.Definition, types map[string]*ast.Definition, deps *dependencies) dependencies {
+	if deps == nil {
+		deps = &dependencies{}
+	}
+
+	if current == nil {
+		for tName, t := range types {
+			if isValidType(t) {
+				(*deps)[tName] = member
+
+				newDeps := effect.recursiveDeps(t, types, deps)
+				for d := range newDeps {
+					(*deps)[d] = member
+				}
+			}
+		}
+	} else {
+		for _, f := range current.Fields {
+			fName := f.Type.Name()
+			if isScalar(fName) {
+				continue
+			}
+
+			_, exists := (*deps)[fName]
+
+			if exists || types[fName].Kind != ast.Object {
+				continue
+			}
+
+			(*deps)[fName] = member
+
+			return effect.recursiveDeps(types[fName], types, deps)
+		}
+	}
+
+	return *deps
+}
+
 func (effect *EmergentEffect) mutationsGenerator(schema *ast.Schema, tpl template.Template) (map[string]io.Reader, error) {
 	files := map[string]io.Reader{}
-	deps := dependenciesTree{}
+	// deps := dependenciesTree{}
 
 	flatTypes := map[string]*ast.Definition{}
 
 	for _, t := range schema.Types {
 		flatTypes[t.Name] = t
-
-		if t.Kind != ast.Object || strings.HasPrefix(t.Name, "__") {
-			continue
-		}
-
-		if deps[t.Name] == nil {
-			deps[t.Name] = []string{}
-		}
-
-		for _, f := range t.Fields {
-			if isScalar(f.Type.Name()) {
-				continue
-			}
-
-			deps[t.Name] = append(deps[t.Name], f.Type.Name())
-		}
-
 	}
 
-	toGenerate := map[string]bool{}
-
-	for typeName, typeDef := range flatTypes {
-		if !isValidType(typeDef) {
-			continue
-		}
-
-		toGenerate[typeDef.Name] = true
-
-		for _, d := range deps[typeName] {
-			dep, exist := flatTypes[d]
-			if !exist {
-				continue
-			}
-
-			if len(dep.Fields) < 1 {
-				continue
-			}
-
-			if dep.Kind != ast.Object {
-				continue
-			}
-
-			toGenerate[dep.Name] = true
-		}
-	}
+	deps := effect.recursiveDeps(nil, flatTypes, nil)
 
 	for _, t := range schema.Types {
-		if _, isValid := toGenerate[t.Name]; !isValid {
+		if _, isValid := deps[t.Name]; !isValid {
 			continue
 		}
 

@@ -3,7 +3,7 @@
 input AutorCreator {
     name: String!
     signature: String
-
+    
     books: [BookSelectOrCreate!]
 }
 
@@ -11,7 +11,7 @@ input AutorUpdate {
     id: ID!
     name: String
     signature: String
-
+    
     addBooks: [BookSelectOrCreate!]
     deleteBooks: [ID!]
     updateBooks: [BookUpdate!]
