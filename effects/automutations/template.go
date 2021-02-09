@@ -2,8 +2,11 @@ package automutations
 
 const templateString = `# --- {{.Name}}
 
-{{- $creatorName := printf "%sCreator" .Name }}
-{{- $updatorName := printf "%sUpdator" .Name }}
+{{- $creatorSuffix := "Creator" }}
+{{- $updatorSuffix := "Updator" }}
+
+{{- $creatorName := printf "%s%s" .Name $creatorSuffix }}
+{{- $updatorName := printf "%s%s" .Name $updatorSuffix }}
 
 input {{$creatorName}} {
     {{- range $name, $field := .ScalarFields}}
@@ -35,7 +38,7 @@ input {{$updatorName}} {
     {{- if .IsMultiple}}
     add{{$name | title}}: [{{.Type}}SelectOrCreate!]
     delete{{$name | title}}: [ID!]
-    update{{$name | title}}: [{{.Type}}Update!]
+    update{{$name | title}}: [{{.Type}}{{$updatorSuffix}}!]
     {{- else}}
     {{$name}}: {{.Type}}SelectOrCreate
     {{- end}}

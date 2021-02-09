@@ -14,7 +14,7 @@ input AutorUpdator {
     
     addBooks: [BookSelectOrCreate!]
     deleteBooks: [ID!]
-    updateBooks: [BookUpdate!]
+    updateBooks: [BookUpdator!]
 }
 
 input AutorSelectOrCreate {
