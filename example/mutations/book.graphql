@@ -11,7 +11,7 @@ input BookCreator {
     owner: AutorSelectOrCreate!
 }
 
-input BookUpdate {
+input BookUpdator {
     id: ID!
     createdAt: Time
     description: String
@@ -32,9 +32,9 @@ extend type Mutation {
     createBook(data: BookCreator!): Book!
     createManyBooks(data: [BookCreator!]!): [Book!]!
 
-    updateBook(data: BookUpdate!): Book!
-    updateManyBooks(data: [BookUpdate!]): [Book!]!
+    updateBook(data: BookUpdator!): Book!
+    updateManyBooks(data: [BookUpdator!]): [Book!]!
 
     deleteBook(id: ID!): Book!
-    deleteBooks(ids: [ID!]!): [Book!]!
+    deleteManyBooks(ids: [ID!]!): [Book!]!
 }

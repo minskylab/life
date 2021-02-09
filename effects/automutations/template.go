@@ -2,7 +2,10 @@ package automutations
 
 const templateString = `# --- {{.Name}}
 
-input {{.Name}}Creator {
+{{- $creatorName := printf "%sCreator" .Name }}
+{{- $updatorName := printf "%sUpdator" .Name }}
+
+input {{$creatorName}} {
     {{- range $name, $field := .ScalarFields}}
     {{- with $field}}
     {{$name}}: {{.Type}}{{if .Required}}!{{end}}
@@ -19,7 +22,7 @@ input {{.Name}}Creator {
     {{- end}}
 }
 
-input {{.Name}}Update {
+input {{$updatorName}} {
     id: ID!
 
     {{- range $name, $field := .ScalarFields}}
@@ -42,15 +45,15 @@ input {{.Name}}Update {
 
 input {{.Name}}SelectOrCreate {
     fromID: ID
-    create: {{.Name}}Creator
+    create: {{$creatorName}}
 }
 
 extend type Mutation {
-    create{{.Name}}(data: {{.Name}}Creator!): {{.Name}}!
-    createMany{{.PluralName}}(data: [{{.Name}}Creator!]!): [{{.Name}}!]!
+    create{{.Name}}(data: {{$creatorName}}!): {{.Name}}!
+    createMany{{.PluralName}}(data: [{{$creatorName}}!]!): [{{.Name}}!]!
 
-    update{{.Name}}(data: {{.Name}}Update!): {{.Name}}!
-    updateMany{{.PluralName}}(data: [{{.Name}}Update!]): [{{.Name}}!]!
+    update{{.Name}}(data: {{$updatorName}}!): {{.Name}}!
+    updateMany{{.PluralName}}(data: [{{$updatorName}}!]): [{{.Name}}!]!
 
     delete{{.Name}}(id: ID!): {{.Name}}!
     deleteMany{{.PluralName}}(ids: [ID!]!): [{{.Name}}!]!

@@ -7,7 +7,7 @@ input AutorCreator {
     books: [BookSelectOrCreate!]
 }
 
-input AutorUpdate {
+input AutorUpdator {
     id: ID!
     name: String
     signature: String
@@ -26,9 +26,9 @@ extend type Mutation {
     createAutor(data: AutorCreator!): Autor!
     createManyAutors(data: [AutorCreator!]!): [Autor!]!
 
-    updateAutor(data: AutorUpdate!): Autor!
-    updateManyAutors(data: [AutorUpdate!]): [Autor!]!
+    updateAutor(data: AutorUpdator!): Autor!
+    updateManyAutors(data: [AutorUpdator!]): [Autor!]!
 
     deleteAutor(id: ID!): Autor!
-    deleteAutors(ids: [ID!]!): [Autor!]!
+    deleteManyAutors(ids: [ID!]!): [Autor!]!
 }
