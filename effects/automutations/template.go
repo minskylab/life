@@ -53,6 +53,6 @@ extend type Mutation {
     updateMany{{.PluralName}}(data: [{{.Name}}Update!]): [{{.Name}}!]!
 
     delete{{.Name}}(id: ID!): {{.Name}}!
-    delete{{.PluralName}}(ids: [ID!]!): [{{.Name}}!]!
+    deleteMany{{.PluralName}}(ids: [ID!]!): [{{.Name}}!]!
 }
 `
