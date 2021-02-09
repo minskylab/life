@@ -21,7 +21,7 @@ type entityStructure struct {
 
 var scalars = []string{"ID", "Int", "Float", "Boolean", "String", "Map", "Time", "DateTime", "Enum"}
 
-func isScalar(typeName string) bool {
+func (effect *EmergentEffect) isScalar(typeName string) bool {
 	for _, s := range scalars {
 		if s == typeName {
 			return true
@@ -30,7 +30,7 @@ func isScalar(typeName string) bool {
 	return false
 }
 
-func generateStructure(entity *ast.Definition) *entityStructure {
+func (effect *EmergentEffect) generateStructure(types map[string]*ast.Definition, entity *ast.Definition) *entityStructure {
 	pluralize := pluralize.NewClient()
 
 	structure := &entityStructure{
@@ -58,7 +58,7 @@ func generateStructure(entity *ast.Definition) *entityStructure {
 			IsMultiple: isMultiple,
 		}
 
-		if isScalar(name) {
+		if effect.isScalar(name) || types[field.Type.Name()].Kind == ast.Enum {
 			structure.ScalarFields[field.Name] = entField
 		} else {
 			structure.RelationFields[field.Name] = entField

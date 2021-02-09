@@ -54,13 +54,8 @@ func (effect *EmergentEffect) recursiveDeps(current *ast.Definition, types map[s
 	} else {
 		for _, f := range current.Fields {
 			fName := f.Type.Name()
-			if isScalar(fName) {
-				continue
-			}
 
-			_, exists := deps[fName]
-
-			if exists || types[fName].Kind != ast.Object {
+			if _, exists := deps[fName]; exists || effect.isScalar(fName) || types[fName].Kind != ast.Object {
 				continue
 			}
 
@@ -95,7 +90,7 @@ func (effect *EmergentEffect) mutationsGenerator(schema *ast.Schema, tpl templat
 			continue
 		}
 
-		entity := generateStructure(t)
+		entity := effect.generateStructure(flatTypes, t)
 
 		buff := bytes.NewBufferString("")
 

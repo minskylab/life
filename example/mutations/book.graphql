@@ -4,10 +4,10 @@ input BookCreator {
     createdAt: Time!
     description: String!
     doi: String!
+    kind: BookKind!
     title: String!
     updatedAt: Time!
     
-    kind: BookKindSelectOrCreate!
     owner: AutorSelectOrCreate!
 }
 
@@ -16,10 +16,10 @@ input BookUpdate {
     createdAt: Time
     description: String
     doi: String
+    kind: BookKind
     title: String
     updatedAt: Time
     
-    kind: BookKindSelectOrCreate
     owner: AutorSelectOrCreate
 }
 
